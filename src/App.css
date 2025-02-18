@@ -96,7 +96,6 @@ margin-right: 10px;
 .user p {
 font-size: 15px;
 margin-right: 10px;
-color: white;
 }
 .user img {
 font-size: 15px;
@@ -112,7 +111,7 @@ nav {
   display: flex;
   /* justify-content: right; */
   align-items: center;
-  color: white;
+  color: #ae7e7e;
   text-decoration: none;
   font-family: 'Nunito', sans-serif;
 }
@@ -207,7 +206,8 @@ textarea {
   font-weight: 600;
 }
 
-/* GOOGLE BUTTON */
+/* Google Button */
+
 .login-with-google-btn {
   cursor: pointer;
   transition: background-color 0.3s, box-shadow 0.3s;
@@ -291,4 +291,105 @@ textarea {
 .dropdown-item.selected {
   background-color: #0d6efd;
   color: #fff;
+}
+
+/* Profile.js */
+
+.profile-container {
+  width: 80%;
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #ffeff6;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profile-avatar {
+  width: 10rem;
+  height: 10rem;
+  background-color: #ae7e7e;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ae7e7e;
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+  border-radius: 50%;
+}
+
+.profile-avatar-icon {
+  font-size: 2rem;
+  color: #808080;
+}
+
+.profile-details {
+  margin-left: 15px;
+}
+
+.profile-name {
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.profile-email {
+  font-size: 1rem;
+  color: gray;
+}
+
+.profile-info-container {
+  margin-top: 15px;
+}
+
+.profile-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.profile-table td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.profile-table td:first-child {
+  font-weight: bold;
+  text-align: left;
+  width: 40%;
+}
+
+.profile-edit-button {
+  display: block;
+  width: 100%;
+  margin-top: 15px;
+  padding: 10px;
+  background: #ae7e7e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.profile-save-button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: none;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.profile-save-button {
+  background-color: #ae7e7e;
+  color: white;
 }

@@ -3,6 +3,7 @@ import "./App.css";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Home from './pages/Home';
 import Login from './pages/Login';
+import Profile from "./pages/Profile";
 import { useState } from 'react';
 import { signOut } from 'firebase/auth';
 import { auth } from "./firebase-config";
@@ -41,7 +42,8 @@ function App() {
               <>
                 <div>{user?.displayName}</div>
                 <img src={user?.photoURL || ""} height="30px" width="30px" alt=""/>
-                <Link onClick={signUserOut}> Log Out </Link>
+                <Link to="/profile"> profile </Link>
+                <Link onClick={signUserOut}> log out </Link>
               </>
             )}
         </span>
@@ -50,6 +52,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login setIsAuth={setIsAuth} />} />
+      <Route path="/profile" element={<Profile />} />
     </Routes>
   </Router>
   );

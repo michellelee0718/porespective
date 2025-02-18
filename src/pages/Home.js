@@ -15,14 +15,14 @@ function Home() {
 
       <div className="search-bar">
         <Form
-          placeHolder="Find skincare product"
+          placeHolder="Search for a product"
           isSearching={(event) => setSearchKeyword(event.target.value)}
         />
       </div>
 
-      <div className="featured-reviews-label">
+      {/* <div className="featured-products-label">
         <label>Featured Products:</label>
-      </div>
+      </div> */}
     </div>
   );
 }

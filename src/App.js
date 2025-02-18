@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Home from './pages/Home';
-import CreatePost from './pages/create-post/CreatePost';
 import Login from './pages/Login';
 import { useState } from 'react';
 import { signOut } from 'firebase/auth';
@@ -31,13 +30,13 @@ function App() {
   <Router>
     <nav>
       <span>
-        <Link to="/"> Home </Link>
+        <Link to="/"> home </Link>
       </span>
 
       <div className="right-nav">
         <span className='user'>
           {!user ? (
-            <Link to="/login"> Login </Link>
+            <Link to="/login"> login </Link>
           ) : (
               <>
                 <div>{user?.displayName}</div>
@@ -50,7 +49,6 @@ function App() {
     </nav>
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/createpost" element={<CreatePost />} />
       <Route path="/login" element={<Login setIsAuth={setIsAuth} />} />
     </Routes>
   </Router>

@@ -37,8 +37,7 @@ LLM_TEMPERATURE=0.0 # Controls the randomness of a model's output. Lower values 
 ```
 
 ### Start the Server
-1. Navigate to the backend directory: ```cd backend```
-2. Start the server: ```python server.py```
+Start the server by running ```python -m backend.server```.
 ---
 
 **Porespective** was created by 

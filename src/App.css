@@ -1,3 +1,44 @@
+:root {
+  --light-bg: #fff5ee;
+  --light-gradient: linear-gradient(90deg, #ae7e7e, #ffeff6);
+  --light-text: #000000;
+  --light-nav-bg: #ffffff00;
+  --dark-bg: #1a1a1a;
+  --dark-gradient: linear-gradient(90deg, #2c2c2c, #3d2a2a);
+  --dark-text: #ffffff;
+  --dark-nav-bg: #00000000;
+}
+
+.app {
+  min-height: 100vh;
+  transition: all 0.3s ease;
+}
+
+.light-mode {
+  background-color: var(--light-bg);
+  background-image: var(--light-gradient);
+  color: var(--light-text);
+}
+
+.dark-mode {
+  background-color: var(--dark-bg);
+  background-image: var(--dark-gradient);
+  color: var(--dark-text);
+}
+
+.dark-mode nav {
+  background-color: var(--dark-nav-bg);
+  color: #ffffff;
+}
+
+.dark-mode a {
+  color: #ffffff;
+}
+
+.dark-mode .profile-container {
+  background: #2c2c2c;
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap');
 
 * { /* removes basic default CSS styles */
@@ -87,37 +128,68 @@ form input
 }
 
 .user {
-display: flex;
-justify-content: center;
-align-items: center;
-margin-right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user div {
+  font-size: 15px;
+}
+
+.user img {
+  border-radius: 50%;
+}
+
+.user a {
+  margin-left: 8px;
+}
+
+.user-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.user-menu img {
+  border-radius: 50%;
+  margin-left: auto;
 }
 
 .user p {
-font-size: 15px;
-margin-right: 10px;
-}
-.user img {
-font-size: 15px;
-border-radius: 50%;
-margin-left: 8px;
+  font-size: 15px;
+  margin-right: 10px;
 }
 
 nav {
-  margin: 0;
   width: 100%;
-  height: 70px;
-  background-color: #ffffff00;
-  display: flex;
-  /* justify-content: right; */
-  align-items: center;
-  color: #ae7e7e;
-  text-decoration: none;
+  padding: 15px 30px;
   font-family: 'Nunito', sans-serif;
 }
 
-nav .right-nav {
-  margin-left: auto
+.nav-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+}
+
+.nav-left a {
+  font-size: 1.3rem;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.right-nav {
+  display: flex;
+  align-items: center;
 }
 
 a {
@@ -392,4 +464,130 @@ textarea {
 .profile-save-button {
   background-color: #ae7e7e;
   color: white;
+}
+
+/* theme toggle */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px solid rgba(174, 126, 126, 0.2);
+  width: 100%;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ffeff6;
+  transition: .4s;
+  border-radius: 24px;
+  border: 2px solid #ae7e7e;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #ae7e7e;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: #2c2c2c;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(22px);
+}
+
+input:disabled + .toggle-slider {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.toggle-label {
+  font-size: 14px;
+  color: var(--light-text);
+  font-weight: 600;
+}
+
+.dark-mode .toggle-label {
+  color: var(--dark-text);
+}
+
+.auto-toggle {
+  display: flex;
+  align-items: center;
+}
+
+.auto-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.auto-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #ae7e7e;
+}
+
+.dark-mode .auto-toggle label {
+  color: var(--dark-text);
+}
+
+.user-top {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.user-top div {
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+.user-top img {
+  border-radius: 50%;
+}
+
+.user-top a {
+  text-decoration: none;
+  font-size: 1.3rem;
+  font-weight: bold;
 }

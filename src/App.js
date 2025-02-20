@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import Home from './pages/Home';
-import Login from './pages/Login';
+import Home from "./pages/Home";
+import Login from "./pages/Login";
 import Profile from "./pages/Profile";
+import Results from "./pages/Results"; // Import Results page
 import { ThemeProvider } from './context/ThemeContext';
 import { useTheme } from './context/ThemeContext';
 import { useState } from 'react';
@@ -21,7 +22,7 @@ function AppContent() {
     if (user) {
       setIsAuth(true);
     }
-  }, [user])
+  }, [user]);
 
   const signUserOut = () => {
     signOut(auth).then(() => {
@@ -40,7 +41,7 @@ function AppContent() {
               <Link to="/"> home </Link>
             </div>
             <div className="right-nav">
-              <span className='user'>
+              <span className="user">
                 {!user ? (
                   <Link to="/login"> login </Link>
                 ) : (
@@ -58,15 +59,18 @@ function AppContent() {
             </div>
           </div>
         </nav>
+        
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login setIsAuth={setIsAuth} />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/results" element={<Results />} /> {/* ✅ Keep this new route */}
         </Routes>
       </Router>
     </div>
   );
 }
+
 
 function App() {
   return (

@@ -1,17 +1,24 @@
 import React from "react";
-import { auth, provider } from "../firebase-config";
+import { auth, provider, db } from "../firebase-config";
 import { signInWithPopup } from 'firebase/auth';
 import { useNavigate } from "react-router-dom";
+import { doc, setDoc } from "firebase/firestore";
 
 function Login({ setIsAuth }) {
     let navigate = useNavigate();
 
-    const signInWithGoogle = () => {
-        signInWithPopup(auth, provider).then((result) => {
-            localStorage.setItem("isAuth", true);
+    const signInWithGoogle = async () => {
+        const result = await signInWithPopup(auth, provider); 
+        const user = result.user;
+        const userRef = doc(db, "users", user.uid);
+        await setDoc(userRef, {
+            email: user.email
+        })
+
+        localStorage.setItem("isAuth", true);
             setIsAuth(true);
             navigate("/");
-        });
+        
     };
     return (
         <div className="loginPage">

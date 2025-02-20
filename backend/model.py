@@ -1,7 +1,7 @@
 from langchain_ollama import ChatOllama
 from langchain.chains import LLMChain
-from prompt import prompt_template
-from config.settings import LLM_BASE_URL, LLM_MODEL, LLM_TEMPERATURE
+from backend.prompt import prompt_template
+from backend.config.settings import LLM_BASE_URL, LLM_MODEL, LLM_TEMPERATURE
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 

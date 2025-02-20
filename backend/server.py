@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from scraper import scrape_product_ingredients
-from model import get_llm_chain
+from backend.scraper import scrape_product_ingredients
+from backend.model import get_llm_chain
 
 app = Flask(__name__)
 CORS(app)

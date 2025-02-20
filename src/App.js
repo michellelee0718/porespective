@@ -7,7 +7,6 @@ import Profile from "./pages/Profile";
 import Results from "./pages/Results"; // Import Results page
 import { ThemeProvider } from './context/ThemeContext';
 import { useTheme } from './context/ThemeContext';
-import { useState } from 'react';
 import { signOut } from 'firebase/auth';
 import { auth } from "./firebase-config";
 import { useAuthState } from "react-firebase-hooks/auth";

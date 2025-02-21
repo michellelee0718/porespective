@@ -11,6 +11,7 @@ import { signOut } from 'firebase/auth';
 import { auth } from "./firebase-config";
 import { useAuthState } from "react-firebase-hooks/auth";
 import ThemeToggle from './components/ThemeToggle';
+import { scheduleNotifications } from "./components/Notification";
 
 function AppContent() {
   const { isDarkMode } = useTheme();
@@ -20,6 +21,7 @@ function AppContent() {
   useEffect(() => { 
     if (user) {
       setIsAuth(true);
+      scheduleNotifications();
     }
   }, [user]);
 

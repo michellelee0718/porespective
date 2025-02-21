@@ -40,4 +40,10 @@ LLM_TEMPERATURE=0.0 # Controls the randomness of a model's output. Lower values 
 1. Start the server by running ```python -m backend.server```.
 ---
 
+## Tests
+Frontend tests: 
+https://github.com/michellelee0718/porespective/tree/main/src/tests
+Backend tests (make sure you've installed pytest beforehand): 
+https://github.com/michellelee0718/porespective/tree/main/backend/tests
+
 **Porespective** was created by 

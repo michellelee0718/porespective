@@ -8,8 +8,32 @@ CORS(app)
 llm_chain = get_llm_chain()
 
 
-def fetch_product_data(product_name):
-    """Fetch the product data using the scraper and format it for the LLM."""
+def fetch_product_data(product_name: str) -> str | None:
+    """
+    Fetch the product data using the scraper and format it for the LLM.
+
+    Args:
+        product_name (str): The name of the product.
+
+    Returns:
+        str | None: A string containing the product's name and ingredient list
+                    if available, otherwise None.
+
+    Description:
+        Calls the `scrape_product_ingredients` to retrieve product details.
+        If the product name is missing, it defaults to the input `product_name`.
+        If ingredients are missing, it returns None.
+
+        The output format is:
+        ```
+        Product Name: <product_name>
+        Ingredients: <ingredient_1>, <ingredient_2>, ...
+        ```
+
+    Example:
+        >>> fetch_product_data("Product A")
+        'Product Name: Product A\nIngredients: Ingredient A, Ingredient B\n'
+    """
     product_data = scrape_product_ingredients(product_name)
 
     if not product_data or "error" in product_data:
@@ -45,7 +69,37 @@ def get_ingredients():
 
 @app.route("/recommend", methods=["POST"])
 def recommend_product():
-    """Endpoint to get AI-based recommendation based on product ingredients."""
+    """
+    Get AI-based recommendations based on product ingredients.
+
+    Args:
+        None: Expects JSON input with `product_name` (str) and `ingredients` (list of dicts).
+
+    Returns:
+        dict: A JSON object containing the product name, AI-generated recommendation, and the product URL.
+
+    Description:
+        This endpoint sends the ingredients for the product to an LLM for recommendation.
+
+        Expected output format:
+        ```json
+        {
+            "product_name": "<product_name>",
+            "recommendation": "<AI-generated recommendation>",
+            "product_url": "https://www.ewg.org/skindeep/search/?search=<product_name>"
+        }
+        ```
+
+    Example:
+        >>> curl -X POST "http://localhost:5000/recommend" \
+                 -H "Content-Type: application/json" \
+                 -d '{"product_name": "Product_1", "ingredients": [{"name": "Ingredient A", "score": 1}, {"name": "Ingredient B", "score": 7}]}'
+        {
+            "product_name": "Product_1",
+            "recommendation": "This product contains Ingredient B, which has a high hazard score. Consider using a safer alternative.",
+            "product_url": "https://www.ewg.org/skindeep/search/?search=Product_1"
+        }
+    """
     data = request.json
     product_name = data.get("product_name")
     ingredients = data.get("ingredients")

@@ -1,8 +1,10 @@
 from langchain_ollama import ChatOllama
 from langchain.chains import LLMChain
-from backend.prompt import prompt_template
+from backend.prompt import prompt_template_recommendation, prompt_template_followup
 from backend.config.settings import LLM_BASE_URL, LLM_MODEL, LLM_TEMPERATURE
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from langchain.chains import ConversationChain
+from langchain.memory import ConversationBufferMemory
 
 
 def get_llm() -> ChatOllama:
@@ -52,4 +54,13 @@ def get_llm_chain() -> LLMChain:
         {'text': 'Hi! How can I assist you today?'}
     """
     llm = get_llm()
-    return LLMChain(llm=llm, prompt=prompt_template)
+    return LLMChain(llm=llm, prompt=prompt_template_recommendation)
+
+
+def create_conversation_chain():
+    """
+    Create a conversation that uses an LLM and a simple buffer memory to store conversation context.
+    """
+    llm = get_llm()
+    memory = ConversationBufferMemory(return_messages=True)
+    return ConversationChain(llm=llm, memory=memory, prompt=prompt_template_followup)

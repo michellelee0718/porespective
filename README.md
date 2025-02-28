@@ -44,8 +44,14 @@ LLM_TEMPERATURE=0.0 # Controls the randomness of a model's output. Lower values 
 Frontend tests: 
 https://github.com/michellelee0718/porespective/tree/main/src/tests
 
-Backend tests (make sure you've installed pytest beforehand): 
+Backend tests:
 https://github.com/michellelee0718/porespective/tree/main/backend/tests
+
+To run all the backend tests:
+
+1. Run ```pip install pytest```
+2. Run ```pytest backend/tests -v```
+
 
 ## Project Structure:
 ```

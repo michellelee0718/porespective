@@ -7,29 +7,33 @@ const Results = () => {
   const { productName, ingredients, productUrl } = location.state || { productName: "Unknown Product", ingredients: [], productUrl: "#" };
 
   const [recommendation, setRecommendation] = useState("");
+  const [sessionId, setSessionId] = useState(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [userMessage, setUserMessage] = useState("");
   const [messages, setMessages] = useState([]);
 
   const fetchRecommendation = async () => {
-    console.log('fetch recommendation')
+    console.log("fetch recommendation");
     setIsLoading(true);
     try {
       const response = await fetch("http://127.0.0.1:5000/recommend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           product_name: productName,
           ingredients: ingredients
-        })
+          // session_id: sessionId
+        }),
       });
-  
+
       const data = await response.json();
       if (data.error) {
         setRecommendation(`Error: ${data.error}`);
       } else {
         setRecommendation(data.recommendation);
+        // Save the session ID returned by the server
+        setSessionId(data.session_id);
         setMessages(prevMessages => [
           ...prevMessages,
           { type: 'ai', content: data.recommendation }
@@ -58,27 +62,66 @@ const Results = () => {
     }
   };
 
-  const handleSendMessage = (e) => {
+  // Follow up questions
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!userMessage.trim()) return;
 
-    // Add user message to chat
-    setMessages(prevMessages => [...prevMessages, { type: 'user', content: userMessage }]);
-    
-    // TODO: Send to backend and get AI response
-    // For now, just add a mock response
-    setIsLoading(true);
-    setTimeout(() => {
-      setMessages(prev => [...prev, { type: 'ai', content: "I apologize, but I can only provide the initial analysis at this time. Follow-up questions feature is coming soon!" }]);
-      setIsLoading(false);
-    }, 1000);
+     // Add user message to chat
+     setMessages(prevMessages => [...prevMessages, { type: 'user', content: userMessage }]);
 
+    setIsLoading(true);
+    try {
+      if (!sessionId) {
+        // If for the sessionId wasn't set, cannot do follow-up questions
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: "ai",
+            content:
+              "No session found. Please click 'Ask AI for Recommendation' first.",
+          },
+        ]);
+        setIsLoading(false);
+        setUserMessage("");
+        return;
+      }
+
+      // Call /chat with session_id + user message
+      const response = await fetch("http://127.0.0.1:5000/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: sessionId,
+          message: userMessage,
+        }),
+      });
+      const data = await response.json();
+      if (data.error) {
+        setMessages((prev) => [
+          ...prev,
+          { type: "ai", content: `Error: ${data.error}` },
+        ]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { type: "ai", content: data.response },
+        ]);
+      }
+    } catch (error) {
+      console.error("Error during chat request:", error);
+      setMessages((prev) => [
+        ...prev,
+        { type: "ai", content: "An error occurred. Please try again." },
+      ]);
+    }
+    setIsLoading(false);
     setUserMessage("");
   };
 
   const handleCloseChat = () => {
     setIsChatOpen(false);
-    setMessages([]); // Optional: clear messages when closing
+    // setMessages([]); // Optional: clear messages when closing
   };
 
   return (
@@ -116,7 +159,7 @@ const Results = () => {
           <div className="chat-messages">
             {messages.map((message, index) => (
               <div key={index} className={`message ${message.type}-message`}>
-                <div className="message-avatar">
+                 <div className="message-avatar">
                   {message.type === 'ai' ? 'AI' : 'You'}
                 </div>
                 <div className="message-content">
@@ -124,7 +167,7 @@ const Results = () => {
                 </div>
               </div>
             ))}
-            
+
             {isLoading && (
               <div className="message ai-message">
                 <div className="message-avatar">AI</div>

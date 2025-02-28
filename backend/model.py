@@ -57,9 +57,28 @@ def get_llm_chain() -> LLMChain:
     return LLMChain(llm=llm, prompt=prompt_template_recommendation)
 
 
-def create_conversation_chain():
+def create_conversation_chain() -> ConversationChain:
     """
-    Create a conversation that uses an LLM and a simple buffer memory to store conversation context.
+    Create and return a conversation chain with memory.
+
+    Args:
+        None
+
+    Returns:
+        ConversationChain: An instance of `ConversationChain` configured with an initialized LLM 
+                           and a `ConversationBufferMemory` to store conversation context.
+
+    Description:
+        This function initializes a conversational AI chain using a language model (`LLM`) and 
+        a buffer memory (`ConversationBufferMemory`). The buffer memory retains previous messages 
+        in the session, allowing for contextual follow-ups. The function applies a predefined 
+        prompt template (`prompt_template_followup`) to guide the conversation.
+
+    Example:
+        >>> conversation_chain = create_conversation_chain()
+        >>> response = conversation_chain.run("Tell me about safe skincare products.")
+        >>> print(response)
+        'Safe skincare products are those that avoid harsh chemicals and allergens. Do you have a specific concern?'
     """
     llm = get_llm()
     memory = ConversationBufferMemory(return_messages=True)

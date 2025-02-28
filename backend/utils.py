@@ -1,7 +1,7 @@
 import random, string
 from backend.model import create_conversation_chain
 
-def generate_session_id(length=16):
+def generate_session_id(length=16) -> string:
     """
     Generate a random session ID.
 
@@ -20,7 +20,7 @@ def generate_session_id(length=16):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
 
-def get_or_create_conversation(conversation_store: dict, session_id: str):
+def get_or_create_conversation(conversation_store: dict, session_id: str) -> dict:
     """
     Retrieve or create a conversation chain for the given session ID.
 

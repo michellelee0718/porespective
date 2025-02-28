@@ -591,3 +591,137 @@ input:disabled + .toggle-slider {
   font-size: 1.3rem;
   font-weight: bold;
 }
+
+/* General ingredient list page styles */
+.ingredient-list-container {
+  padding: 2rem;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.ingredient-list-title {
+  text-align: center;
+  color: var(--light-text);
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+}
+
+.ingredient-input {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background-color: white;
+  color: #333;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.recommendation-button {
+  display: block;
+  margin: 2rem auto;
+  padding: 0.8rem 1.5rem;
+  background-color: #9c27b0;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.recommendation-button:hover {
+  background-color: #7b1fa2;
+}
+
+/* Dark mode specific styles */
+.dark-mode .ingredient-list-title {
+  color: var(--dark-text);
+}
+
+.dark-mode .ingredient-input {
+  background-color: #333;
+  color: #eee;
+  border-color: #555;
+}
+
+.dark-mode .recommendation-button {
+  background-color: #ba68c8;
+}
+
+.dark-mode .recommendation-button:hover {
+  background-color: #9c27b0;
+}
+
+/* Dark mode styles for the ingredient list page */
+.dark-mode .ingredient-list-container {
+  color: var(--dark-text);
+}
+
+.dark-mode input[type="text"],
+.dark-mode textarea {
+  background-color: #333;
+  color: #eee;
+  border-color: #555;
+}
+
+.dark-mode h1, 
+.dark-mode h2, 
+.dark-mode h3 {
+  color: var(--dark-text);
+}
+
+.dark-mode .white-box {
+  background-color: #333;
+  border-color: #555;
+}
+
+/* More specific dark mode overrides */
+.dark-mode input[type="text"],
+.dark-mode textarea,
+.dark-mode .MuiInputBase-root input,
+.dark-mode .MuiOutlinedInput-root,
+.dark-mode .MuiFilledInput-root,
+.dark-mode .ingredient-input,
+.dark-mode [role="textbox"] {
+  background-color: #333 !important;
+  color: #eee !important;
+  border-color: #555 !important;
+}
+
+/* Target common container classes */
+.dark-mode .ingredient-list-container,
+.dark-mode .input-container,
+.dark-mode .form-container {
+  color: var(--dark-text, #eee) !important;
+}
+
+/* Target specific white boxes or cards */
+.dark-mode .card,
+.dark-mode .paper,
+.dark-mode .MuiPaper-root,
+.dark-mode .white-box,
+.dark-mode .input-wrapper {
+  background-color: #333 !important;
+  border-color: #555 !important;
+  color: #eee !important;
+}
+
+/* Ensure all text content is visible */
+.dark-mode h1, 
+.dark-mode h2, 
+.dark-mode h3,
+.dark-mode p,
+.dark-mode label,
+.dark-mode span {
+  color: var(--dark-text, #eee) !important;
+}
+
+/* Force buttons to have proper contrast */
+.dark-mode button,
+.dark-mode .button,
+.dark-mode .MuiButton-root {
+  background-color: #ba68c8 !important;
+  color: white !important;
+}

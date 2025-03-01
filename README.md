@@ -40,4 +40,66 @@ LLM_TEMPERATURE=0.0 # Controls the randomness of a model's output. Lower values 
 1. Start the server by running ```python -m backend.server```.
 ---
 
+## Tests
+Frontend tests: 
+https://github.com/michellelee0718/porespective/tree/main/src/tests
+
+Backend tests:
+https://github.com/michellelee0718/porespective/tree/main/backend/tests
+
+To run all the backend tests:
+
+1. Run ```pip install pytest```
+2. Run ```pytest backend/tests -v```
+
+
+## Project Structure:
+```
+.
+├── README.md
+├── backend
+│   ├── __init__.py
+│   ├── config
+│   │   ├── __init__.py
+│   │   └── settings.py
+│   ├── model.py
+│   ├── prompt.py
+│   ├── scraper.py
+│   ├── server.py
+│   └── tests
+│       ├── __init__.py
+│       └── test_server.py
+├── public
+│   ├── index.html
+│   ├── magnifying-glass.png
+│   └── manifest.json
+├── src
+│   ├── App.css
+│   ├── App.js
+│   ├── App.test.js
+│   ├── components
+│   │   ├── Dropdown.js
+│   │   ├── ThemeToggle.js
+│   │   └── search.js
+│   ├── context
+│   │   └── ThemeContext.js
+│   ├── firebase-config.js
+│   ├── index.css
+│   ├── index.js
+│   ├── pages
+│   │   ├── Home.js
+│   │   ├── Login.js
+│   │   ├── Profile.js
+│   │   ├── Results.css
+│   │   └── Results.js
+│   ├── reportWebVitals.js
+│   ├── setupTests.js
+│   └── tests
+│       └── ThemeToggle.test.js
+├── .gitignore
+├── requirements.txt
+├── package.json
+├── package-lock.json
+```
+
 **Porespective** was created by 

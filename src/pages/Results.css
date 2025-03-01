@@ -272,3 +272,60 @@ animation-delay: 0.4s;
   opacity: 1;
 }
 }
+
+/* Dark mode overrides for Results page */
+.dark-mode .ingredient-list {
+  background-color: #333;
+  color: #eee;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .recommendation-box,
+.dark-mode .chat-container,
+.dark-mode .chat-messages,
+.dark-mode .chat-input-container,
+.dark-mode .message-content {
+  background-color: #333;
+  color: #eee;
+  border-color: #555;
+}
+
+.dark-mode .product-name,
+.dark-mode .ingredient-title,
+.dark-mode .recommendation-title {
+  color: #eee !important;
+}
+
+.dark-mode .message-content {
+  background-color: #444;
+}
+
+.dark-mode .user-message .message-content {
+  background-color: #555;
+}
+
+.dark-mode .chat-input {
+  background-color: #444;
+  color: #eee;
+  border-color: #666;
+}
+
+.dark-mode .product-name a {
+  color: #eee;
+}
+
+.dark-mode .product-name a:hover {
+  color: #ba68c8;
+}
+
+.dark-mode .score-07, 
+.dark-mode .score-08, 
+.dark-mode .score-09, 
+.dark-mode .score-10 {
+  background-color: rgba(255, 99, 71, 0.2);
+  color: #ff6347;
+}
+
+.dark-mode .ingredient-item {
+  border-color: #555;
+}

@@ -6,6 +6,7 @@ from backend.scraper import scrape_product_ingredients
 from backend.model import get_llm, get_llm_chain
 from backend.utils import generate_session_id, get_or_create_conversation
 from backend.callback import StreamingCallbackHandler
+from backend.prompt import prompt_template_followup
 import json
 
 app = Flask(__name__)
@@ -261,19 +262,21 @@ def chat():
         print("Error: No user message provided")
         return jsonify({"error": "Missing user message"}), 400
 
-    # Retrieve or create the conversation chain
-    conversation_chain = get_or_create_conversation(conversation_store, session_id)
-    print(f"Retrieved conversation chain: {conversation_chain}")
-    print(f"Conversation memory: {conversation_chain.memory.buffer if hasattr(conversation_chain.memory, 'buffer') else 'No buffer'}")
-
     def stream():
         try:
-            llm = get_llm()
-            print(f"LLM instance created: {llm}")
+            # Get the conversation chain instead of raw LLM
+            conversation_chain = get_or_create_conversation(conversation_store, session_id)
+            print(f"Retrieved conversation chain: {conversation_chain}")
             full_response = ""
             
             print("Starting stream processing...")
-            for chunk in llm.stream(user_message):
+            # Use conversation_chain.run() instead of llm.stream()
+            for chunk in conversation_chain.llm.stream(
+                prompt_template_followup.format(
+                    history=conversation_chain.memory.buffer,
+                    input=user_message
+                )
+            ):
                 if isinstance(chunk, str):
                     content = chunk
                 else:
@@ -283,15 +286,11 @@ def chat():
                 full_response += content
                 yield f"data: {json.dumps({'content': content})}\n\n"
 
-            print(f"Stream completed. Full response: {full_response}")
-            
             # Save to conversation memory after complete
-            print("Saving to conversation memory...")
             conversation_chain.memory.save_context(
                 {"input": user_message},
                 {"output": full_response}
             )
-            print("Context saved successfully")
             
         except Exception as e:
             print(f"Error during streaming: {str(e)}")

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { ThemeProvider } from '../context/ThemeContext';
-import ThemeToggle from '../components/ThemeToggle';
+import { ThemeProvider } from '../../context/ThemeContext';
+import ThemeToggle from '../../components/ThemeToggle';
 
 describe('Theme Toggle Tests', () => {
   beforeEach(() => {

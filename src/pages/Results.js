@@ -14,33 +14,93 @@ const Results = () => {
   const [messages, setMessages] = useState([]);
 
   const fetchRecommendation = async () => {
-    console.log("fetch recommendation");
+    console.log("Fetching recommendation...");
     setIsLoading(true);
     try {
       const response = await fetch("http://127.0.0.1:5000/recommend", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "text/event-stream",
+        },
         body: JSON.stringify({
           product_name: productName,
           ingredients: ingredients
-          // session_id: sessionId
-        }),
+        })
       });
 
-      const data = await response.json();
-      if (data.error) {
-        setRecommendation(`Error: ${data.error}`);
-      } else {
-        setRecommendation(data.recommendation);
-        // Save the session ID returned by the server
-        setSessionId(data.session_id);
-        setMessages(prevMessages => [
-          ...prevMessages,
-          { type: 'ai', content: data.recommendation }
-        ]);
+      const receivedSessionId = response.headers.get('X-Session-Id');
+      
+      // Set the session ID immediately when we receive it
+      if (receivedSessionId) {
+        setSessionId(receivedSessionId);
       }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullResponse = "";
+
+      // Add initial AI message
+      setMessages(prevMessages => [
+        ...prevMessages,
+        { type: 'ai', content: '', isStreaming: true }
+      ]);
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        
+        const text = decoder.decode(value);
+        
+        const lines = text.split('\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.content) {
+                fullResponse += data.content;
+                
+                setMessages(prevMessages => {
+                  const lastMessage = prevMessages[prevMessages.length - 1];
+                  if (lastMessage && lastMessage.isStreaming) {
+                    return [
+                      ...prevMessages.slice(0, -1),
+                      { ...lastMessage, content: fullResponse }
+                    ];
+                  }
+                  return prevMessages;
+                });
+              }
+            } catch (e) {
+              console.error("Error parsing SSE data:", e);
+              console.error("Problematic line:", line);
+            }
+          }
+        }
+      }
+
+      // Final update to remove streaming flag
+      setMessages(prevMessages => {
+        const lastMessage = prevMessages[prevMessages.length - 1];
+        if (lastMessage && lastMessage.isStreaming) {
+          return [
+            ...prevMessages.slice(0, -1),
+            { ...lastMessage, content: fullResponse, isStreaming: false }
+          ];
+        }
+        return prevMessages;
+      });
+
+      setRecommendation(fullResponse);
+      setSessionId(receivedSessionId);
     } catch (error) {
-      setRecommendation("Failed to fetch recommendation.");
+      console.error("Error:", error);
+      setMessages(prevMessages => [
+        ...prevMessages,
+        { type: 'ai', content: "Failed to fetch recommendation." }
+      ]);
     }
     setIsLoading(false);
   };
@@ -67,47 +127,94 @@ const Results = () => {
     e.preventDefault();
     if (!userMessage.trim()) return;
 
-     // Add user message to chat
-     setMessages(prevMessages => [...prevMessages, { type: 'user', content: userMessage }]);
 
+    // Add user message to chat
+    setMessages(prevMessages => [...prevMessages, { type: 'user', content: userMessage }]);
+    const currentMessage = userMessage;
+    setUserMessage("");
     setIsLoading(true);
-    try {
-      if (!sessionId) {
-        // If for the sessionId wasn't set, cannot do follow-up questions
-        setMessages((prev) => [
-          ...prev,
-          {
-            type: "ai",
-            content:
-              "No session found. Please click 'Ask AI for Recommendation' first.",
-          },
-        ]);
-        setIsLoading(false);
-        setUserMessage("");
-        return;
-      }
 
-      // Call /chat with session_id + user message
-      const response = await fetch("http://127.0.0.1:5000/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          session_id: sessionId,
-          message: userMessage,
-        }),
-      });
-      const data = await response.json();
-      if (data.error) {
-        setMessages((prev) => [
-          ...prev,
-          { type: "ai", content: `Error: ${data.error}` },
+    try {
+        if (!sessionId) {
+            console.log("No session ID found!");
+            setMessages((prev) => [
+                ...prev,
+                {
+                    type: "ai",
+                    content: "No session found. Please click 'Ask AI for Recommendation' first.",
+                },
+            ]);
+            setIsLoading(false);
+            return;
+        }
+
+        const response = await fetch("http://127.0.0.1:5000/chat", {
+            method: "POST",
+            credentials: 'include',
+            headers: { 
+                "Content-Type": "application/json",
+                "Accept": "text/event-stream",
+            },
+            body: JSON.stringify({
+                session_id: sessionId,
+                message: currentMessage,
+            }),
+        });
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullResponse = "";
+
+        // Add initial AI message
+        setMessages(prevMessages => [
+            ...prevMessages,
+            { type: 'ai', content: '', isStreaming: true }
         ]);
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          { type: "ai", content: data.response },
-        ]);
-      }
+
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            
+            const text = decoder.decode(value);
+            const lines = text.split('\n');
+            
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    try {
+                        const data = JSON.parse(line.slice(6));
+                        if (data.content) {
+                            fullResponse += data.content;
+                            
+                            setMessages(prevMessages => {
+                                const lastMessage = prevMessages[prevMessages.length - 1];
+                                if (lastMessage && lastMessage.isStreaming) {
+                                    return [
+                                        ...prevMessages.slice(0, -1),
+                                        { ...lastMessage, content: fullResponse }
+                                    ];
+                                }
+                                return prevMessages;
+                            });
+                        }
+                    } catch (e) {
+                        console.error("Error parsing SSE data:", e);
+                    }
+                }
+            }
+        }
+
+        // Final update to remove streaming flag
+        setMessages(prevMessages => {
+            const lastMessage = prevMessages[prevMessages.length - 1];
+            if (lastMessage && lastMessage.isStreaming) {
+                return [
+                    ...prevMessages.slice(0, -1),
+                    { ...lastMessage, content: fullResponse, isStreaming: false }
+                ];
+            }
+            return prevMessages;
+        });
+
     } catch (error) {
       console.error("Error during chat request:", error);
       setMessages((prev) => [
@@ -116,8 +223,7 @@ const Results = () => {
       ]);
     }
     setIsLoading(false);
-    setUserMessage("");
-  };
+};
 
   const handleCloseChat = () => {
     setIsChatOpen(false);
@@ -167,19 +273,6 @@ const Results = () => {
                 </div>
               </div>
             ))}
-
-            {isLoading && (
-              <div className="message ai-message">
-                <div className="message-avatar">AI</div>
-                <div className="message-content">
-                  <div className="typing-indicator">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
           <form onSubmit={handleSendMessage} className="chat-input-container">

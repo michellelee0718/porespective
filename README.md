@@ -79,10 +79,14 @@ To run all the backend tests:
 │   ├── App.test.js
 │   ├── components
 │   │   ├── Dropdown.js
+│   │   ├── Notification.js
+│   │   ├── RoutineCheckIn.css
 │   │   ├── ThemeToggle.js
 │   │   └── search.js
 │   ├── context
 │   │   └── ThemeContext.js
+│   ├── firebase
+│   │   └── routineService.js
 │   ├── firebase-config.js
 │   ├── index.css
 │   ├── index.js
@@ -95,7 +99,13 @@ To run all the backend tests:
 │   ├── reportWebVitals.js
 │   ├── setupTests.js
 │   └── tests
-│       └── ThemeToggle.test.js
+│       ├── components
+│       │   ├── RoutineCheckIn.test.js
+│       │   └── ThemeToggle.test.js
+│       ├── firebase
+│       │   └── routineService.js
+│       └── pages
+│           └── Profile.test.js
 ├── .gitignore
 ├── requirements.txt
 ├── package.json

@@ -1,5 +1,5 @@
-import React from 'react';
-import { useTheme } from '../context/ThemeContext';
+import React from "react";
+import { useTheme } from "../context/ThemeContext";
 
 const ThemeToggle = () => {
   const { isDarkMode, isAutoMode, toggleTheme, toggleAutoMode } = useTheme();
@@ -16,9 +16,9 @@ const ThemeToggle = () => {
           />
           <span className="toggle-slider"></span>
         </label>
-        <span className="toggle-label">{isDarkMode ? 'Night' : 'Day'}</span>
+        <span className="toggle-label">{isDarkMode ? "Night" : "Day"}</span>
       </div>
-      
+
       <div className="auto-toggle">
         <label>
           <input
@@ -33,4 +33,4 @@ const ThemeToggle = () => {
   );
 };
 
-export default ThemeToggle; 
+export default ThemeToggle;

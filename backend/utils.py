@@ -1,5 +1,8 @@
-import random, string
+import random
+import string
+
 from backend.model import create_conversation_chain
+
 
 def generate_session_id(length=16) -> string:
     """
@@ -17,7 +20,7 @@ def generate_session_id(length=16) -> string:
         >>> len(session_id)
         8
     """
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+    return "".join(random.choices(string.ascii_letters + string.digits, k=length))
 
 
 def get_or_create_conversation(conversation_store: dict, session_id: str) -> dict:
@@ -37,10 +40,10 @@ def get_or_create_conversation(conversation_store: dict, session_id: str) -> dic
         which includes memory to track the ongoing conversation.
 
     Example:
-        >>> # Suppose 'conversation_store' is a global dictionary 
+        >>> # Suppose 'conversation_store' is a global dictionary
         >>> # and 'create_conversation_chain()' returns a ConversationChain object.
         >>> chain = get_or_create_conversation("user123")
-        >>> # If 'user123' did not exist in conversation_store before, 
+        >>> # If 'user123' did not exist in conversation_store before,
         >>> # it will be created and stored. Otherwise, the existing chain is returned.
     """
     if session_id not in conversation_store:

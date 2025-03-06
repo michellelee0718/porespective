@@ -4,10 +4,17 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+from backend.cache import get_cached_product, cache_product_data
 import time
 
 def scrape_product_ingredients(product_name):
     """Search for a product and scrape its ingredient details from EWG Skin Deep"""
+
+    # First check if cached
+    cached = get_cached_product(product_name)
+    if cached:
+        print(f"✅ Using cached data for {product_name}")
+        return cached
 
     # Construct the search results page URL
     search_url = f"https://www.ewg.org/skindeep/search/?search={product_name.replace(' ', '%20')}"
@@ -73,11 +80,15 @@ def scrape_product_ingredients(product_name):
         score = scores[i] if i < len(scores) else "N/A"
         ingredient_data.append({"name": ingredients[i], "score": score})
 
-    return {
+    result = {
         "product_url": product_url,
         "product_name": actual_product_name,
         "ingredients": ingredient_data
     }
+
+    # cache before return
+    cache_product_data(product_name, result)
+    return result
 
 # 🔥 Test the scraper
 if __name__ == "__main__":

@@ -169,12 +169,12 @@ const Profile = () => {
               <td><strong>Gender:</strong></td>
               <td>
                 {editing ? (
-                  <input
-                    type="text"
-                    name="gender"
-                    value={formData.gender}
-                    onChange={handleChange}
-                  />
+                  <select name="gender" value={formData.gender} onChange={handleChange}>
+                  <option value="">Select Gender</option>
+                  <option value="Female">Female</option>
+                  <option value="Male">Male</option>
+                  <option value="Nonbinary">Nonbinary</option>
+                </select>
                 ) : (
                   userData?.gender || "Not specified"
                 )}
@@ -184,12 +184,14 @@ const Profile = () => {
               <td><strong>Skin Type:</strong></td>
               <td>
                 {editing ? (
-                  <input
-                    type="text"
-                    name="skinType"
-                    value={formData.skinType}
-                    onChange={handleChange}
-                  />
+                <select name="skinType" value={formData.skinType} onChange={handleChange}>
+                <option value="">Select Skin Type</option>
+                <option value="Dry">Dry</option>
+                <option value="Oily">Oily</option>
+                <option value="Normal">Normal</option>
+                <option value="Sensitive">Sensitive</option>
+                <option value="Combination">Combination</option>
+              </select>
                 ) : (
                   userData?.skinType || "Not specified"
                 )}

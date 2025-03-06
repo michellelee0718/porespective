@@ -102,6 +102,11 @@ const Profile = () => {
 
   // Save data to Firestore
   const handleSave = async () => {
+    const regex = /^(1[0-2]|0?[1-9]):[0-5][0-9]$/
+    if (!regex.test(formData.skincareRoutine.am) || !regex.test(formData.skincareRoutine.pm)) {
+      alert("Please input a valid time in HH/MM format");
+      return;
+    }
     if (auth.currentUser) {
       const userRef = doc(db, "users", auth.currentUser.uid);
       const docSnap = await getDoc(userRef);

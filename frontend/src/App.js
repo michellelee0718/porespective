@@ -12,6 +12,8 @@ import { auth } from "./firebase-config";
 import { useAuthState } from "react-firebase-hooks/auth";
 import ThemeToggle from './components/ThemeToggle';
 import { scheduleNotifications } from "./components/Notification";
+import { initDailyCheckIn } from "./firebase/routineService";
+import "./components/RoutineCheckIn.css";
 
 function AppContent() {
   const { isDarkMode } = useTheme();
@@ -21,6 +23,11 @@ function AppContent() {
   useEffect(() => { 
     if (user) {
       setIsAuth(true);
+      
+      // Initialize today's check-in status
+      initDailyCheckIn();
+      
+      // Schedule notifications
       scheduleNotifications();
     }
   }, [user]);
@@ -71,7 +78,6 @@ function AppContent() {
     </div>
   );
 }
-
 
 function App() {
   return (

@@ -11,16 +11,19 @@ Porespective is a web application built with
 [Firebase](https://firebase.google.com/) and [React](https://reactjs.org/) that ...
 
 ## 🧳 How to Locally Host App
-## Frontend
 1. Open the terminal
 2. Clone the Git repository with ```$ git clone https://github.com/michellelee0718/porespective```
-3. After cloning, run ```$ npm install``` to install all necessary dependencies
-4. Then run ```$ npm start``` to launch the app
+
+## Frontend
+1. ```cd frontend```
+2. run ```$ npm install``` to install all necessary dependencies
+3. Then run ```$ npm start``` to launch the app
 
 ## Backend
 ### Install the Dependencies
 1. Create and activate a virtual environment: ```python -m venv venv```; Mac/Linux: ```source venv/bin/activate```; Windows: ```venv\Scripts\activate```; conda: ```conda create --name {environment_name} python=3.11``` and ```conda activate {environment_name}```
-2. Install backend dependencies: ```pip install -r requirements.txt```
+2. ```cd backend```
+3. Install backend dependencies: ```pip install -r requirements.txt```
 
 ### Launch the LLM
 1. Install Ollama following the requirement on [Ollama](https://github.com/ollama/ollama).
@@ -37,7 +40,7 @@ LLM_TEMPERATURE=0.0 # Controls the randomness of a model's output. Lower values 
 ```
 
 ### Start the Server
-1. Start the server by running ```python -m backend.server```.
+1. Start the server by running ```python -m backend.server``` in the main directory.
 ---
 
 ## Tests
@@ -47,59 +50,80 @@ https://github.com/michellelee0718/porespective/tree/main/src/tests
 Backend tests:
 https://github.com/michellelee0718/porespective/tree/main/backend/tests
 
+To run all the frontend tests:
+
+1. ```cd frontend```
+2. Run ```npm test```
+
 To run all the backend tests:
 
 1. Run ```pip install pytest```
-2. Run ```pytest backend/tests -v```
-
+2. ```cd backend```
+3. Run ```pytest tests -v```
 
 ## Project Structure:
 ```
 .
 ├── README.md
 ├── backend
-│   ├── __init__.py
-│   ├── config
-│   │   ├── __init__.py
-│   │   └── settings.py
-│   ├── model.py
-│   ├── prompt.py
-│   ├── scraper.py
-│   ├── server.py
-│   └── tests
-│       ├── __init__.py
-│       └── test_server.py
-├── public
-│   ├── index.html
-│   ├── magnifying-glass.png
-│   └── manifest.json
-├── src
-│   ├── App.css
-│   ├── App.js
-│   ├── App.test.js
-│   ├── components
-│   │   ├── Dropdown.js
-│   │   ├── ThemeToggle.js
-│   │   └── search.js
-│   ├── context
-│   │   └── ThemeContext.js
-│   ├── firebase-config.js
-│   ├── index.css
-│   ├── index.js
-│   ├── pages
-│   │   ├── Home.js
-│   │   ├── Login.js
-│   │   ├── Profile.js
-│   │   ├── Results.css
-│   │   └── Results.js
-│   ├── reportWebVitals.js
-│   ├── setupTests.js
-│   └── tests
-│       └── ThemeToggle.test.js
-├── .gitignore
-├── requirements.txt
-├── package.json
-├── package-lock.json
+│   ├── __init__.py
+│   ├── callback.py
+│   ├── config
+│   │   ├── __init__.py
+│   │   └── settings.py
+│   ├── model.py
+│   ├── prompt.py
+│   ├── requirements.txt
+│   ├── scraper.py
+│   ├── server.py
+│   ├── test.py
+│   ├── tests
+│   │   ├── __init__.py
+│   │   └── unit_tests
+│   │       ├── __init__.py
+│   │       ├── test_model.py
+│   │       ├── test_server.py
+│   │       └── test_utils.py
+│   └── utils.py
+├── frontend
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   │   ├── index.html
+│   │   ├── magnifying-glass.png
+│   │   └── manifest.json
+│   └── src
+│       ├── App.css
+│       ├── App.js
+│       ├── components
+│       │   ├── Dropdown.js
+│       │   ├── Notification.js
+│       │   ├── RoutineCheckIn.css
+│       │   ├── ThemeToggle.js
+│       │   └── search.js
+│       ├── context
+│       │   └── ThemeContext.js
+│       ├── firebase
+│       │   └── routineService.js
+│       ├── firebase-config.js
+│       ├── index.css
+│       ├── index.js
+│       ├── pages
+│       │   ├── Home.js
+│       │   ├── Login.js
+│       │   ├── Profile.js
+│       │   ├── Results.css
+│       │   └── Results.js
+│       ├── reportWebVitals.js
+│       ├── setupTests.js
+│       └── tests
+│           ├── components
+│           │   ├── RoutineCheckIn.test.js
+│           │   └── ThemeToggle.test.js
+│           ├── firebase
+│           │   └── RoutineService.test.js
+│           └── pages
+│               └── Profile.test.js
 ```
 
 **Porespective** was created by 

@@ -1,11 +1,9 @@
 from flask import Flask, request, Response, jsonify, stream_with_context
 from flask_cors import CORS
-from queue import Queue
-from threading import Thread
 from backend.scraper import scrape_product_ingredients
-from backend.model import get_llm, get_llm_chain
+from backend.model import get_llm
+from backend.prompt import prompt_template_recommendation
 from backend.utils import generate_session_id, get_or_create_conversation
-from backend.callback import StreamingCallbackHandler
 from backend.prompt import prompt_template_followup
 import json
 
@@ -78,6 +76,52 @@ def get_ingredients():
         result["product_name"] = product_name  # Default to query if actual name not found
 
     return jsonify(result)
+
+def stream_recommend(llm_input: str, session_id: str):
+    """
+    Stream AI-generated recommendations based on product details and user profile.
+
+    Args:
+        llm_input (str): Formatted input string containing product name, ingredients, and user profile.
+        session_id (str): Unique session identifier for conversation context tracking.
+
+    Yields:
+        Streaming JSON chunks containing the AI's response.
+
+    Description:
+        - Feeds prompt and input into the LLM and streams the response.
+        - Saves the full response to conversation memory for follow-up questions.
+    """
+    llm = get_llm()
+    
+    # Add the prompt to the LLM input
+    llm_input = prompt_template_recommendation.format(input=llm_input) # Add prompt
+
+    full_response = ""
+    
+    try:
+        for chunk in llm.stream(llm_input):
+            if isinstance(chunk, str):
+                content = chunk
+            else:
+                content = chunk.content if hasattr(chunk, 'content') else str(chunk)
+            
+            print(f"Streaming chunk: {content}")  # Debug log
+            full_response += content
+            yield f"data: {json.dumps({'content': content})}\n\n"
+
+        # Save to conversation memory after complete
+        conversation_chain = get_or_create_conversation(conversation_store, session_id)
+        conversation_chain.memory.save_context(
+            {"input": llm_input},
+            {"output": full_response}
+        )
+    except Exception as e:
+        print("Error during streaming:", str(e))
+        yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+
+
 
 @app.route("/recommend", methods=["POST"])
 def recommend_product():
@@ -164,44 +208,70 @@ def recommend_product():
         "A lower score (1-2) means it's considered low risk, 3-6 indicates moderate risk, "
         "and 7-10 suggests a higher hazard potential. "
         "Please analyze the safety of the product based on these scores. "
-        "Provide your response in plain text format without any special formatting, headers, or bullet points."
     )
 
     llm_input = f"Product Name: {product_name}\nIngredients:\n{ingredient_details}\n\n{explanation}"
 
-    def stream():
-        llm = get_llm()  # Get LLM directly instead of chain
-        full_response = ""
-        
-        try:
-            for chunk in llm.stream(llm_input):
-                if isinstance(chunk, str):
-                    content = chunk
-                else:
-                    content = chunk.content if hasattr(chunk, 'content') else str(chunk)
-                
-                print(f"Streaming chunk: {content}")  # Debug log
-                full_response += content
-                yield f"data: {json.dumps({'content': content})}\n\n"
-
-            # Save to conversation memory after complete
-            conversation_chain = get_or_create_conversation(conversation_store, session_id)
-            conversation_chain.memory.save_context(
-                {"input": llm_input},
-                {"output": full_response}
-            )
-        except Exception as e:
-            print("Error during streaming:", str(e))
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
-
     return Response(
-        stream_with_context(stream()),
+        stream_with_context(stream_recommend(llm_input, session_id)),
         mimetype='text/event-stream',
         headers={
             'Cache-Control': 'no-cache',
             'X-Session-Id': session_id
         }
     )
+
+
+def stream_chat(user_message: str, session_id: str):
+    """
+    Stream AI-generated responses for user follow-up questions.
+
+    Args:
+        user_message (str): User's query.
+        session_id (str): Unique session identifier for conversation context tracking.
+
+    Yields:
+        Streaming JSON chunks with AI responses.
+
+    Description:
+        - Retrieves or initializes a conversation chain.
+        - Streams response using `prompt_template_followup`.
+        - Saves conversation context for future queries.
+    """
+    try:
+        # Get the conversation chain 
+        conversation_chain = get_or_create_conversation(conversation_store, session_id)
+        print(f"Retrieved conversation chain: {conversation_chain}")
+        full_response = ""
+        
+        print("Starting stream processing...")
+        for chunk in conversation_chain.llm.stream(
+            prompt_template_followup.format(
+                history=conversation_chain.memory.buffer,
+                input=user_message
+            )
+        ):
+            if isinstance(chunk, str):
+                content = chunk
+            else:
+                content = chunk.content if hasattr(chunk, 'content') else str(chunk)
+            
+            print(f"Processing chunk: {content}")
+            full_response += content
+            yield f"data: {json.dumps({'content': content})}\n\n"
+
+        # Save to conversation memory after complete
+        conversation_chain.memory.save_context(
+            {"input": user_message},
+            {"output": full_response}
+        )
+        
+    except Exception as e:
+        print(f"Error during streaming: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
 
 @app.route("/chat", methods=["POST"])
@@ -262,45 +332,8 @@ def chat():
         print("Error: No user message provided")
         return jsonify({"error": "Missing user message"}), 400
 
-    def stream():
-        try:
-            # Get the conversation chain instead of raw LLM
-            conversation_chain = get_or_create_conversation(conversation_store, session_id)
-            print(f"Retrieved conversation chain: {conversation_chain}")
-            full_response = ""
-            
-            print("Starting stream processing...")
-            # Use conversation_chain.run() instead of llm.stream()
-            for chunk in conversation_chain.llm.stream(
-                prompt_template_followup.format(
-                    history=conversation_chain.memory.buffer,
-                    input=user_message
-                )
-            ):
-                if isinstance(chunk, str):
-                    content = chunk
-                else:
-                    content = chunk.content if hasattr(chunk, 'content') else str(chunk)
-                
-                print(f"Processing chunk: {content}")
-                full_response += content
-                yield f"data: {json.dumps({'content': content})}\n\n"
-
-            # Save to conversation memory after complete
-            conversation_chain.memory.save_context(
-                {"input": user_message},
-                {"output": full_response}
-            )
-            
-        except Exception as e:
-            print(f"Error during streaming: {str(e)}")
-            print(f"Error type: {type(e)}")
-            import traceback
-            print(f"Traceback: {traceback.format_exc()}")
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
-
     return Response(
-        stream_with_context(stream()),
+        stream_with_context(stream_chat(user_message=user_message, session_id=session_id)),
         mimetype='text/event-stream',
         headers={
             'Cache-Control': 'no-cache',

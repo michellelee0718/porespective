@@ -9,6 +9,40 @@ const showNotification = (message) => {
   }
 };
 
+const sendEmail = async () => {
+  if (!auth.currentUser) return;
+  const userRef = doc(db, "users", auth.currentUser.uid);
+  const docSnap = await getDoc(userRef);
+  if (!docSnap.exists()) return;
+  const userData = docSnap.data();
+  if (!userData) return;
+
+  const userEmail = userData.email; 
+
+  const url = "http://localhost:3001/send-email";
+  console.log("Sending email to URL: ", url);
+  try {
+    const response = await fetch(url, {
+      method: "POST", 
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        subject: "Porespective - Skincare Routine Reminder!", 
+        email: userEmail,
+        message: "Reminder to do your skincare routine today!"
+      }),
+    }); 
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.status}`);
+    } 
+    const json = await response.json();
+    console.log(json);
+  } catch (error) {
+    console.error(error.message);
+  }
+};
+
 
 export const resetNotifications = async () => {
   if (!auth.currentUser) return;
@@ -48,23 +82,28 @@ export const scheduleNotifications = async () => {
 
     if (hours > 12) { 
         hours = hours - 12; 
+        console.log("ENTER");
         const pmTime = hours.toString() + ":" + now.getMinutes().toString().padStart(2, '0');
         if (pmTime === pm && !pmCompleted && !pmNotification) {
+
           await updateDoc(userRef, {
             [`pmNotification`]: true
           });
-            showNotification("Time for your night skincare routine!");
+          console.log("ENTER");
+          await sendEmail();
+          showNotification("Time for your night skincare routine!");
+          
           } 
     } else {
         const amTime = now.getHours().toString() + ":" + now.getMinutes().toString().padStart(2, '0');
         if (amTime === am && !amCompleted && !amNotification) {
-            showNotification("Time for your morning skincare routine!");
-            await updateDoc(userRef, {
-              [`amNotification`]: true
-            });
+           showNotification("Time for your morning skincare routine!");
+           await updateDoc(userRef, {
+            [`amNotification`]: true
+          });
+          await sendEmail();
           }
     }
-
 };
 
 const resetInterval = setInterval(scheduleNotifications, 30000);

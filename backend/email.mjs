@@ -3,19 +3,19 @@ import express from "express";
 import cors from "cors";
 import nodemailer from "nodemailer"; 
 
-dotenv.config({path: '../../../.env'}); 
+
+dotenv.config({path: '../.env'}); 
 
 const app = express();
-const PORT = 3000; 
+const PORT = 3001; 
 const corsOptions = {
-   origin: '*',  
+   origin: "http://localhost:3000",
    optionsSuccessStatus: 200 
 };
 
 app.use(express.json());
 app.use(cors(corsOptions));
-
-
+  
 const transporter = nodemailer.createTransport({
    host: process.env.SMTP_HOST,
    port: 587,
@@ -29,8 +29,9 @@ const transporter = nodemailer.createTransport({
 
 // Email sending endpoint
 app.post('/send-email', async (req, res) => {
+   console.log('Request received:', req.body);  
    try {
-       const { subject, email, message } = req.body; // Destructure and retrieve data from request body.
+       const { subject, email, message } = req.body;
 
        if (!subject || !email || !message) {
            return res.status(400).json({ status: 'error', message: 'Missing required fields' });

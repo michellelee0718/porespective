@@ -1,54 +1,53 @@
 .login-with-google-btn {
-    background-color: #a56dc1;
-    color: white;
-    border: none;
-    padding: 15px 40px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 15px;
-    margin: 15px 0;
-  }
-  
-.email_login {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .email_input {
-    width: 100%;
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 15px;
-    border: none;
-    outline: none;
-    background: white;
-    color: black;
-  }
+  background-color: #a56dc1;
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  margin: 15px 0;
+}
 
-  .pass_input {
-    width: 100%;
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 15px;
-    border: none;
-    outline: none;
-    background: white;
-    color: black;
-  }
-  
-  .submit_login {
-    background-color: #a56dc1;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-  }
-  
-  p {
-    margin-top: 10px;
-    cursor: pointer;
-  }
-  
+.email_login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.email_input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 15px;
+  border: none;
+  outline: none;
+  background: white;
+  color: black;
+}
+
+.pass_input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 15px;
+  border: none;
+  outline: none;
+  background: white;
+  color: black;
+}
+
+.submit_login {
+  background-color: #a56dc1;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+p {
+  margin-top: 10px;
+  cursor: pointer;
+}

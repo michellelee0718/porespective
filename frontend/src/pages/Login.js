@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { auth, provider, db } from "../firebase-config";
-import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { doc, setDoc } from "firebase/firestore";
 import "./Login.css";
@@ -27,9 +31,17 @@ function Login({ setIsAuth }) {
     try {
       let userCredential;
       if (isRegistering) {
-        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password,
+        );
       } else {
-        userCredential = await signInWithEmailAndPassword(auth, email, password);
+        userCredential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password,
+        );
       }
       const user = userCredential.user;
       const userRef = doc(db, "users", user.uid);
@@ -50,16 +62,17 @@ function Login({ setIsAuth }) {
         Sign in with Google
       </button>
       <form className="email_login" onSubmit={handleEmailAuth}>
-        <input className="email_input"
+        <input
+          className="email_input"
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-         
         />
         <br />
-        <input className="pass_input"
+        <input
+          className="pass_input"
           type="password"
           placeholder="Password"
           value={password}
@@ -67,10 +80,17 @@ function Login({ setIsAuth }) {
           required
         />
         <br />
-        <button className="submit_login" type="submit">{isRegistering ? "Register" : "Login"}</button>
+        <button className="submit_login" type="submit">
+          {isRegistering ? "Register" : "Login"}
+        </button>
       </form>
-      <p onClick={() => setIsRegistering(!isRegistering)} style={{ cursor: "pointer", color: "blue" }}>
-        {isRegistering ? "Already have an account? Log in" : "Don't have an account? Register"}
+      <p
+        onClick={() => setIsRegistering(!isRegistering)}
+        style={{ cursor: "pointer", color: "blue" }}
+      >
+        {isRegistering
+          ? "Already have an account? Log in"
+          : "Don't have an account? Register"}
       </p>
     </div>
   );

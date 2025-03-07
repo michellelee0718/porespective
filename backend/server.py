@@ -197,8 +197,10 @@ def recommend_product():
 
     if not product_name:
         return jsonify({"error": "Missing product_name"}), 400
-    if not ingredients or not isinstance(ingredients, list):
-        return jsonify({"error": "Missing or invalid ingredients"}), 400
+    if not ingredients:
+        return jsonify({"error": "Missing ingredients"}), 400
+    if not isinstance(ingredients, list):
+        return jsonify({"error": "Invalid ingredients (Should be a list)"}), 400
     if not user_profile:
         return jsonify({"error": "Missing user profile"}), 400
 

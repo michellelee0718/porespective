@@ -18,6 +18,9 @@ const Results = () => {
   const [messages, setMessages] = useState([]);
 
   const fetchRecommendation = async () => {
+    console.log("Fetching user profile...");
+    const userProfile = JSON.parse(localStorage.getItem("userProfile")) || {};
+
     console.log("Fetching recommendation...");
     setIsLoading(true);
     try {
@@ -31,6 +34,7 @@ const Results = () => {
         body: JSON.stringify({
           product_name: productName,
           ingredients: ingredients,
+          user_profile: userProfile,
         }),
       });
 

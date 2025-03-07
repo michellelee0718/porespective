@@ -191,15 +191,25 @@ def recommend_product():
     product_name = data.get("product_name")
     ingredients = data.get("ingredients")
     session_id = data.get("session_id")
+    user_profile = data.get("user_profile")  # Get user profile information
 
     if not product_name:
         return jsonify({"error": "Missing product_name"}), 400
     if not ingredients or not isinstance(ingredients, list):
         return jsonify({"error": "Missing or invalid ingredients"}), 400
+    if not user_profile:
+        return jsonify({"error": "Missing user profile"}), 400
 
     # If client didn't provide a session_id, generate one automatically
     if not session_id:
         session_id = generate_session_id()
+
+    profile_details = (
+        f"User Profile:\n"
+        f"- Skin Type: {user_profile.get('skinType', 'Unknown')}\n"
+        f"- Skin Concerns: {user_profile.get('skinConcerns', 'None')}\n"
+        f"- Allergies: {user_profile.get('allergies', 'None')}\n"
+    )
 
     # Format the ingredients for the LLM
     ingredient_details = "\n".join(
@@ -212,10 +222,10 @@ def recommend_product():
         "A lower score (1-2) means it's considered low risk, 3-6 indicates moderate risk, "
         "and 7-10 suggests a higher hazard potential. "
         "Please analyze the safety of the product based on these scores. "
+        "In addition, use user's skin type, skin concerns, and allergies while making recommendations."
     )
 
-    llm_input = f"Product Name: {product_name}\nIngredients:\n{ingredient_details}\n\n{explanation}"
-
+    llm_input = f"Product Name: {product_name}\nIngredients:\n{ingredient_details}\n\n{profile_details}\n\n{explanation}"
     return Response(
         stream_with_context(stream_recommend(llm_input, session_id)),
         mimetype="text/event-stream",

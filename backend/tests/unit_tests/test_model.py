@@ -1,8 +1,10 @@
-from backend.model import get_llm, get_llm_chain, create_conversation_chain
-from langchain_ollama import ChatOllama
-from langchain.chains import LLMChain, ConversationChain
+from langchain.chains import ConversationChain, LLMChain
 from langchain.memory import ConversationBufferMemory
-from langchain.schema import HumanMessage, AIMessage
+from langchain.schema import AIMessage, HumanMessage
+from langchain_ollama import ChatOllama
+
+from backend.model import create_conversation_chain, get_llm, get_llm_chain
+
 
 ### Test for the get_llm() function
 def test_get_llm(mocker):
@@ -12,16 +14,16 @@ def test_get_llm(mocker):
     mock_chat_ollama = mocker.patch("backend.model.ChatOllama", autospec=True)
 
     llm_instance = get_llm()
-    
+
     # Ensure ChatOllama is instantiated correctly
     mock_chat_ollama.assert_called_once_with(
         base_url=mocker.ANY,
         model=mocker.ANY,
         temperature=mocker.ANY,
         streaming=True,
-        callbacks=mocker.ANY
+        callbacks=mocker.ANY,
     )
-    
+
     assert isinstance(llm_instance, ChatOllama)  # Check for correct type
 
 
@@ -73,15 +75,15 @@ def test_conversation_chain_memory():
 
     conversation_chain.memory.save_context(
         {"input": "What are the benefits of hyaluronic acid?"},
-        {"output": "Hyaluronic acid helps retain skin moisture and hydration."}
+        {"output": "Hyaluronic acid helps retain skin moisture and hydration."},
     )
     conversation_chain.memory.save_context(
         {"input": "How often should I use it?"},
-        {"output": "It is safe for daily use, especially in moisturizers and serums."}
+        {"output": "It is safe for daily use, especially in moisturizers and serums."},
     )
 
     history = conversation_chain.memory.load_memory_variables({})["history"]
-    
+
     # Ensure history contains 4 messages (2 user inputs + 2 AI responses)
     assert len(history) == 4
     assert isinstance(history[0], HumanMessage)
@@ -90,6 +92,12 @@ def test_conversation_chain_memory():
     assert isinstance(history[3], AIMessage)
 
     assert history[0].content == "What are the benefits of hyaluronic acid?"
-    assert history[1].content == "Hyaluronic acid helps retain skin moisture and hydration."
+    assert (
+        history[1].content
+        == "Hyaluronic acid helps retain skin moisture and hydration."
+    )
     assert history[2].content == "How often should I use it?"
-    assert history[3].content == "It is safe for daily use, especially in moisturizers and serums."
+    assert (
+        history[3].content
+        == "It is safe for daily use, especially in moisturizers and serums."
+    )

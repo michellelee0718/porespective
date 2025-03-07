@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { auth, db } from "../firebase-config";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { initDailyCheckIn, markRoutineCompleted, getRoutineCheckInStatus } from "../firebase/routineService";
+import {
+  initDailyCheckIn,
+  markRoutineCompleted,
+  getRoutineCheckInStatus,
+} from "../firebase/routineService";
 
 const Profile = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [routineStatus, setRoutineStatus] = useState({ amCompleted: false, pmCompleted: false });
+  const [routineStatus, setRoutineStatus] = useState({
+    amCompleted: false,
+    pmCompleted: false,
+  });
   const [formData, setFormData] = useState({
     fullName: "",
     gender: "",
@@ -37,13 +44,13 @@ const Profile = () => {
               pm: data.skincareRoutine?.pm || "",
             },
           });
-          
+
           // Initialize check-in status for today if needed
           const status = await getRoutineCheckInStatus();
           if (status) {
             setRoutineStatus({
               amCompleted: status.amCompleted,
-              pmCompleted: status.pmCompleted
+              pmCompleted: status.pmCompleted,
             });
           }
         } else {
@@ -56,7 +63,7 @@ const Profile = () => {
             allergies: "",
             skincareRoutine: { am: "", pm: "" },
           });
-          
+
           // Initialize a fresh check-in record
           await initDailyCheckIn();
         }
@@ -65,24 +72,24 @@ const Profile = () => {
     };
 
     fetchUserData();
-    
+
     // Set up check-in reset at midnight
     const checkMidnightReset = () => {
       const now = new Date();
       if (now.getHours() === 0 && now.getMinutes() === 0) {
-        initDailyCheckIn().then(status => {
+        initDailyCheckIn().then((status) => {
           if (status) {
             setRoutineStatus({
               amCompleted: status.amCompleted,
-              pmCompleted: status.pmCompleted
+              pmCompleted: status.pmCompleted,
             });
           }
         });
       }
     };
-    
+
     const resetInterval = setInterval(checkMidnightReset, 60000); // Check every minute
-    
+
     return () => clearInterval(resetInterval);
   }, []);
 
@@ -116,17 +123,17 @@ const Profile = () => {
       setEditing(false);
     }
   };
-  
+
   // Handle routine check-in
   const handleRoutineCheckIn = async (routineType) => {
     try {
       await markRoutineCompleted(routineType);
-      setRoutineStatus(prev => ({
+      setRoutineStatus((prev) => ({
         ...prev,
-        [routineType === "am" ? "amCompleted" : "pmCompleted"]: true
+        [routineType === "am" ? "amCompleted" : "pmCompleted"]: true,
       }));
     } catch (error) {
-      // Show an error message to the user 
+      // Show an error message to the user
       console.error("Error marking routine as completed:", error);
     }
   };
@@ -156,7 +163,9 @@ const Profile = () => {
               onChange={handleChange}
             />
           ) : (
-            <p className="profile-name">{userData?.fullName || auth.currentUser?.displayName}</p>
+            <p className="profile-name">
+              {userData?.fullName || auth.currentUser?.displayName}
+            </p>
           )}
           <p className="profile-email">{auth.currentUser?.email}</p>
         </div>
@@ -166,7 +175,9 @@ const Profile = () => {
         <table className="profile-table">
           <tbody>
             <tr>
-              <td><strong>Gender:</strong></td>
+              <td>
+                <strong>Gender:</strong>
+              </td>
               <td>
                 {editing ? (
                   <input
@@ -181,7 +192,9 @@ const Profile = () => {
               </td>
             </tr>
             <tr>
-              <td><strong>Skin Type:</strong></td>
+              <td>
+                <strong>Skin Type:</strong>
+              </td>
               <td>
                 {editing ? (
                   <input
@@ -196,7 +209,9 @@ const Profile = () => {
               </td>
             </tr>
             <tr>
-              <td><strong>Skin Concerns:</strong></td>
+              <td>
+                <strong>Skin Concerns:</strong>
+              </td>
               <td>
                 {editing ? (
                   <input
@@ -211,7 +226,9 @@ const Profile = () => {
               </td>
             </tr>
             <tr>
-              <td><strong>Allergies:</strong></td>
+              <td>
+                <strong>Allergies:</strong>
+              </td>
               <td>
                 {editing ? (
                   <input
@@ -226,7 +243,9 @@ const Profile = () => {
               </td>
             </tr>
             <tr>
-              <td><strong>AM Routine:</strong></td>
+              <td>
+                <strong>AM Routine:</strong>
+              </td>
               <td>
                 {editing ? (
                   <input
@@ -241,7 +260,9 @@ const Profile = () => {
               </td>
             </tr>
             <tr>
-              <td><strong>PM Routine:</strong></td>
+              <td>
+                <strong>PM Routine:</strong>
+              </td>
               <td>
                 {editing ? (
                   <input
@@ -268,7 +289,7 @@ const Profile = () => {
             <p>Status: {routineStatus.amCompleted ? "Completed" : "Pending"}</p>
             <p>Scheduled for: {userData?.skincareRoutine?.am || "Not set"}</p>
             {!routineStatus.amCompleted && (
-              <button 
+              <button
                 className="checkin-button"
                 onClick={() => handleRoutineCheckIn("am")}
                 disabled={!userData?.skincareRoutine?.am}
@@ -277,13 +298,13 @@ const Profile = () => {
               </button>
             )}
           </div>
-          
+
           <div className="routine-card">
             <h3>Evening Routine</h3>
             <p>Status: {routineStatus.pmCompleted ? "Completed" : "Pending"}</p>
             <p>Scheduled for: {userData?.skincareRoutine?.pm || "Not set"}</p>
             {!routineStatus.pmCompleted && (
-              <button 
+              <button
                 className="checkin-button"
                 onClick={() => handleRoutineCheckIn("pm")}
                 disabled={!userData?.skincareRoutine?.pm}
@@ -295,7 +316,10 @@ const Profile = () => {
         </div>
       </div>
 
-      <button className="profile-edit-button" onClick={() => setEditing(!editing)}>
+      <button
+        className="profile-edit-button"
+        onClick={() => setEditing(!editing)}
+      >
         {editing ? "Cancel" : "Edit"}
       </button>
 

@@ -35,6 +35,8 @@ propcache==0.2.1
 pydantic==2.10.6
 pydantic_core==2.27.2
 PySocks==1.7.1
+pytest==7.4.0
+pytest-mock==3.14.0
 python-dotenv==1.0.1
 PyYAML==6.0.2
 requests==2.32.3

@@ -191,7 +191,9 @@ def recommend_product():
     product_name = data.get("product_name")
     ingredients = data.get("ingredients")
     session_id = data.get("session_id")
-    user_profile = data.get("user_profile")  # Get user profile information
+    user_profile = data.get(
+        "user_profile"
+    )  # Get user profile information for customized recommendation
 
     if not product_name:
         return jsonify({"error": "Missing product_name"}), 400

@@ -1,0 +1,300 @@
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import "./Results.css";
+
+const Results = () => {
+  const location = useLocation();
+  const { productName, ingredients, productUrl } = location.state || {
+    productName: "Unknown Product",
+    ingredients: [],
+    productUrl: "#",
+  };
+
+  const [recommendation, setRecommendation] = useState("");
+  const [sessionId, setSessionId] = useState(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userMessage, setUserMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+
+  const fetchRecommendation = async () => {
+    console.log("Fetching recommendation...");
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://127.0.0.1:5000/recommend", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+        },
+        body: JSON.stringify({
+          product_name: productName,
+          ingredients: ingredients,
+        }),
+      });
+
+      const receivedSessionId = response.headers.get("X-Session-Id");
+
+      // Set the session ID immediately when we receive it
+      if (receivedSessionId) {
+        setSessionId(receivedSessionId);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullResponse = "";
+
+      // Add initial AI message
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { type: "ai", content: "", isStreaming: true },
+      ]);
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const text = decoder.decode(value);
+
+        const lines = text.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.content) {
+                fullResponse += data.content;
+
+                setMessages((prevMessages) => {
+                  const lastMessage = prevMessages[prevMessages.length - 1];
+                  if (lastMessage && lastMessage.isStreaming) {
+                    return [
+                      ...prevMessages.slice(0, -1),
+                      { ...lastMessage, content: fullResponse },
+                    ];
+                  }
+                  return prevMessages;
+                });
+              }
+            } catch (e) {
+              console.error("Error parsing SSE data:", e);
+              console.error("Problematic line:", line);
+            }
+          }
+        }
+      }
+
+      // Final update to remove streaming flag
+      setMessages((prevMessages) => {
+        const lastMessage = prevMessages[prevMessages.length - 1];
+        if (lastMessage && lastMessage.isStreaming) {
+          return [
+            ...prevMessages.slice(0, -1),
+            { ...lastMessage, content: fullResponse, isStreaming: false },
+          ];
+        }
+        return prevMessages;
+      });
+
+      setRecommendation(fullResponse);
+      setSessionId(receivedSessionId);
+    } catch (error) {
+      console.error("Error:", error);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { type: "ai", content: "Failed to fetch recommendation." },
+      ]);
+    }
+    setIsLoading(false);
+  };
+
+  const handleAskAI = async () => {
+    setIsChatOpen(true);
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      {
+        type: "ai",
+        content: `Hello! I'd be happy to analyze ${productName} for you.`,
+      },
+    ]);
+
+    if (!recommendation) {
+      await fetchRecommendation();
+    } else {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { type: "ai", content: recommendation },
+      ]);
+    }
+  };
+
+  // Follow up questions
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!userMessage.trim()) return;
+
+    // Add user message to chat
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { type: "user", content: userMessage },
+    ]);
+    const currentMessage = userMessage;
+    setUserMessage("");
+    setIsLoading(true);
+
+    try {
+      if (!sessionId) {
+        console.log("No session ID found!");
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: "ai",
+            content:
+              "No session found. Please click 'Ask AI for Recommendation' first.",
+          },
+        ]);
+        setIsLoading(false);
+        return;
+      }
+
+      const response = await fetch("http://127.0.0.1:5000/chat", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          message: currentMessage,
+        }),
+      });
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullResponse = "";
+
+      // Add initial AI message
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { type: "ai", content: "", isStreaming: true },
+      ]);
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const text = decoder.decode(value);
+        const lines = text.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.content) {
+                fullResponse += data.content;
+
+                setMessages((prevMessages) => {
+                  const lastMessage = prevMessages[prevMessages.length - 1];
+                  if (lastMessage && lastMessage.isStreaming) {
+                    return [
+                      ...prevMessages.slice(0, -1),
+                      { ...lastMessage, content: fullResponse },
+                    ];
+                  }
+                  return prevMessages;
+                });
+              }
+            } catch (e) {
+              console.error("Error parsing SSE data:", e);
+            }
+          }
+        }
+      }
+
+      // Final update to remove streaming flag
+      setMessages((prevMessages) => {
+        const lastMessage = prevMessages[prevMessages.length - 1];
+        if (lastMessage && lastMessage.isStreaming) {
+          return [
+            ...prevMessages.slice(0, -1),
+            { ...lastMessage, content: fullResponse, isStreaming: false },
+          ];
+        }
+        return prevMessages;
+      });
+    } catch (error) {
+      console.error("Error during chat request:", error);
+      setMessages((prev) => [
+        ...prev,
+        { type: "ai", content: "An error occurred. Please try again." },
+      ]);
+    }
+    setIsLoading(false);
+  };
+
+  const handleCloseChat = () => {
+    setIsChatOpen(false);
+    // setMessages([]); // Optional: clear messages when closing
+  };
+
+  return (
+    <div className="results-container">
+      <h1 className="product-name">
+        <a href={productUrl} target="_blank" rel="noopener noreferrer">
+          {productName}
+        </a>
+      </h1>
+
+      <h2 className="ingredient-title">Ingredient List</h2>
+      <ul className="ingredient-list">
+        {ingredients.map((item, index) => (
+          <li key={index} className={`ingredient-item score-${item.score}`}>
+            {item.name} - <strong>Score: {parseInt(item.score, 10)}</strong>
+          </li>
+        ))}
+      </ul>
+
+      <button className="ask-ai-button" onClick={handleAskAI}>
+        Ask AI for Recommendation
+      </button>
+
+      {isChatOpen && (
+        <div className="chat-container">
+          <div className="chat-header">
+            <h3>AI Analysis</h3>
+            <button onClick={handleCloseChat} className="chat-close-button">
+              ×
+            </button>
+          </div>
+          <div className="chat-messages">
+            {messages.map((message, index) => (
+              <div key={index} className={`message ${message.type}-message`}>
+                <div className="message-avatar">
+                  {message.type === "ai" ? "AI" : "You"}
+                </div>
+                <div className="message-content">{message.content}</div>
+              </div>
+            ))}
+          </div>
+
+          <form onSubmit={handleSendMessage} className="chat-input-container">
+            <input
+              type="text"
+              value={userMessage}
+              onChange={(e) => setUserMessage(e.target.value)}
+              placeholder="Type your follow-up question..."
+              className="chat-input"
+            />
+            <button type="submit" className="chat-send-button">
+              Send
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Results;

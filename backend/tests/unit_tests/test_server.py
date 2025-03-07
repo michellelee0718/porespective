@@ -1,4 +1,5 @@
 import pytest
+
 from backend.server import app
 
 
@@ -11,18 +12,19 @@ def client():
     with app.test_client() as client:
         yield client
 
+
 ### Test for the /recommend endpoint
 def test_recommend_product_success(client, mocker):
     """
     Test a successful POST /recommend request with valid product_name.
     """
-    # Mock the LLM chain
-    mock_llm_chain = mocker.MagicMock()
-    mock_llm_chain.invoke.return_value = "This is a safe product. Recommend it."
+    # Mock the streaming function
+    mock_stream = mocker.MagicMock()
+    mock_stream.return_value = iter(
+        ['data: {"content": "This is a safe product. Recommend it."}\n\n']
+    )
 
-    # Patch the llm_chain global in server.py
-
-    mocker.patch("backend.server.get_llm_chain", return_value=mock_llm_chain)
+    mocker.patch("backend.server.stream_recommend", mock_stream)
 
     # Prepare JSON body
     request_json = {
@@ -36,20 +38,21 @@ def test_recommend_product_success(client, mocker):
     response = client.post("/recommend", json=request_json)
     assert response.status_code == 200
 
-    data = response.get_json()
-    assert data["product_name"] == "Product A"
-    assert "recommendation" in data
-    assert data["recommendation"] == "This is a safe product. Recommend it."
-    assert "product_url" in data
+    response_data = "".join([line.decode() for line in response.response])
+
+    assert 'data: {"content": "This is a safe product. Recommend it."}' in response_data
 
 
 def test_recommend_product_with_session_id(client, mocker):
     """
     Test recommendation response while using an existing session ID.
     """
-    mock_llm_chain = mocker.MagicMock()
-    mock_llm_chain.invoke.return_value = "Session ID test passed."
-    mocker.patch("backend.server.get_llm_chain", return_value=mock_llm_chain)
+    mock_stream = mocker.MagicMock()
+    mock_stream.return_value = iter(
+        ['data: {"content": "Session ID test passed."}\n\n']
+    )
+
+    mocker.patch("backend.server.stream_recommend", mock_stream)
 
     request_json = {
         "product_name": "Product A",
@@ -57,15 +60,15 @@ def test_recommend_product_with_session_id(client, mocker):
             {"name": "Ingredient 1", "score": 1},
             {"name": "Ingredient 2", "score": 2},
         ],
-        "session_id": "test_session_123"
+        "session_id": "test_session_123",
     }
 
     response = client.post("/recommend", json=request_json)
     assert response.status_code == 200
 
-    data = response.get_json()
-    assert data["session_id"] == "test_session_123"
-    assert data["recommendation"] == "Session ID test passed."
+    response_data = "".join([line.decode() for line in response.response])
+
+    assert 'data: {"content": "Session ID test passed."}' in response_data
 
 
 def test_recommend_product_missing_name(client):
@@ -74,9 +77,7 @@ def test_recommend_product_missing_name(client):
     """
     response = client.post(
         "/recommend",
-        json={
-            "ingredients": [{"name": "Ingredient 1", "score": "1"}]
-        },
+        json={"ingredients": [{"name": "Ingredient 1", "score": "1"}]},
     )
     assert response.status_code == 400
     data = response.get_json()
@@ -110,13 +111,14 @@ def test_recommend_product_empty_ingredients(client):
     assert data["error"] == "Missing or invalid ingredients"
 
 
-def test_recommend_product_exception(client, mocker):
+def test_recommend_stream_error(client, mocker):
     """
-    Simulate an exception occurring during LLM response processing.
+    Simulate LLM streaming error during recommendation.
     """
-    mock_llm_chain = mocker.MagicMock()
-    mock_llm_chain.invoke.side_effect = Exception("LLM error")
-    mocker.patch("backend.server.get_llm_chain", return_value=mock_llm_chain)
+    # Mock the streaming function to simulate an error
+    mock_stream = mocker.MagicMock()
+    mock_stream.return_value = iter(['data: {"error": "LLM Streaming error"}\n\n'])
+    mocker.patch("backend.server.stream_recommend", mock_stream)
 
     response = client.post(
         "/recommend",
@@ -125,52 +127,35 @@ def test_recommend_product_exception(client, mocker):
             "ingredients": [{"name": "Ingredient 1", "score": "1"}],
         },
     )
-    assert response.status_code == 500
-    data = response.get_json()
-    assert data["error"] == "Failed to generate recommendation"
+    assert (
+        response.status_code == 200
+    )  # SSE responses should not use 500, instead return errors in the stream
 
+    response_data = "".join([line.decode() for line in response.response])
 
-def test_recommend_product_conversation_chain_failure(client, mocker):
-    """
-    Simulate an exception when retrieving or creating the conversation chain.
-    """
-    mock_llm_chain = mocker.MagicMock()
-    mock_llm_chain.invoke.return_value = "Some recommendation."
-    mocker.patch("backend.server.get_llm_chain", return_value=mock_llm_chain)
-    mocker.patch("backend.server.get_or_create_conversation", side_effect=Exception("Conversation error"))
+    assert 'data: {"error": "LLM Streaming error"}' in response_data
 
-    response = client.post(
-        "/recommend",
-        json={
-            "product_name": "Product A",
-            "ingredients": [{"name": "Ingredient 1", "score": "1"}],
-        },
-    )
-    assert response.status_code == 500
-    data = response.get_json()
-    assert "error" in data
-    assert "Failed to generate recommendation" in data["error"]
 
 ### Test for the /chat endpoint
 def test_chat_success(client, mocker):
     """
     Test a successful chat response with a valid session ID and user message.
     """
-    mock_conversation_chain = mocker.MagicMock()
-    mock_conversation_chain.run.return_value = "This is a follow-up response."
-    mocker.patch("backend.server.get_or_create_conversation", return_value=mock_conversation_chain)
+    mock_stream = mocker.MagicMock()
+    mock_stream.return_value = iter(
+        ['data: {"content": "This is a follow-up response."}\n\n']
+    )
 
-    request_json = {
-        "session_id": "abc123DEF",
-        "message": "Is this product safe?"
-    }
+    mocker.patch("backend.server.stream_chat", mock_stream)
+
+    request_json = {"session_id": "abc123DEF", "message": "Is this product safe?"}
 
     response = client.post("/chat", json=request_json)
     assert response.status_code == 200
 
-    data = response.get_json()
-    assert "response" in data
-    assert data["response"] == "This is a follow-up response."
+    response_data = "".join([line.decode() for line in response.response])
+
+    assert 'data: {"content": "This is a follow-up response."}' in response_data
 
 
 def test_chat_missing_session_id(client):
@@ -179,9 +164,7 @@ def test_chat_missing_session_id(client):
     """
     response = client.post(
         "/chat",
-        json={
-            "message": "Can I use this product daily?"
-        },
+        json={"message": "Can I use this product daily?"},
     )
     assert response.status_code == 400
     data = response.get_json()
@@ -195,9 +178,7 @@ def test_chat_missing_user_message(client):
     """
     response = client.post(
         "/chat",
-        json={
-            "session_id": "abc123DEF"
-        },
+        json={"session_id": "abc123DEF"},
     )
     assert response.status_code == 400
     data = response.get_json()
@@ -209,42 +190,50 @@ def test_chat_non_existent_session(client, mocker):
     """
     Test that the API initializes a new conversation when a non-existent session ID is used.
     """
-    mock_conversation_chain = mocker.MagicMock()
-    mock_conversation_chain.run.return_value = "This is the first response in a new session."
-    mocker.patch("backend.server.get_or_create_conversation", return_value=mock_conversation_chain)
+    mock_stream = mocker.MagicMock()
+    mock_stream.return_value = iter(
+        ['data: {"content": "This is the first response in a new session."}\n\n']
+    )
+
+    mocker.patch("backend.server.stream_chat", mock_stream)
 
     request_json = {
         "session_id": "non_existent_session",
-        "message": "Tell me about safe skincare products."
+        "message": "Tell me about safe skincare products.",
     }
 
     response = client.post("/chat", json=request_json)
     assert response.status_code == 200
 
-    data = response.get_json()
-    assert "response" in data
-    assert data["response"] == "This is the first response in a new session."
+    response_data = "".join([line.decode() for line in response.response])
+
+    assert (
+        'data: {"content": "This is the first response in a new session."}'
+        in response_data
+    )
 
 
-def test_chat_exception_handling(client, mocker):
+def test_chat_streaming_error(client, mocker):
     """
-    Simulate an internal server error occurring during chat response processing.
+    Simulate an LLM streaming error during chat response processing.
     """
-    mock_conversation_chain = mocker.MagicMock()
-    mock_conversation_chain.run.side_effect = Exception("LLM processing error")
-    mocker.patch("backend.server.get_or_create_conversation", return_value=mock_conversation_chain)
+    mock_stream = mocker.MagicMock()
+    mock_stream.return_value = iter(['data: {"error": "LLM Streaming error"}\n\n'])
+
+    mocker.patch("backend.server.stream_chat", mock_stream)
 
     response = client.post(
         "/chat",
         json={
             "session_id": "abc123DEF",
-            "message": "What is a good fragrance-free moisturizer?"
+            "message": "What is a good fragrance-free moisturizer?",
         },
     )
-    assert response.status_code == 500
-    data = response.get_json()
-    assert "error" in data
-    assert "LLM processing error" in data["error"]
+    assert response.status_code == 200
+
+    response_data = "".join([line.decode() for line in response.response])
+
+    assert 'data: {"error": "LLM Streaming error"}' in response_data
 
 
 def test_chat_empty_message(client):
@@ -253,10 +242,7 @@ def test_chat_empty_message(client):
     """
     response = client.post(
         "/chat",
-        json={
-            "session_id": "abc123DEF",
-            "message": ""
-        },
+        json={"session_id": "abc123DEF", "message": ""},
     )
     assert response.status_code == 400
     data = response.get_json()

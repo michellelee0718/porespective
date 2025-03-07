@@ -1,8 +1,13 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { initializeApp } from "firebase/app"
+import { getFirestore } from "firebase/firestore"
+import { getAnalytics } from "firebase/analytics"
+import {
+  getAuth,
+  GoogleAuthProvider,
+  setPersistence,
+  browserLocalPersistence,
+} from "firebase/auth"
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -16,13 +21,22 @@ const firebaseConfig = {
   messagingSenderId: "224366153443",
   appId: "1:224366153443:web:c3126cd53ba95341543fd6",
   measurementId: "G-TQW37SLWDW",
-};
+}
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getFirestore(app);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+const app = initializeApp(firebaseConfig)
+const analytics = getAnalytics(app)
+const db = getFirestore(app)
+const auth = getAuth(app)
 
-export { auth, db, provider };
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    console.log("Persistence set to local storage")
+  })
+  .catch(error => {
+    console.error("Error setting persistence:", error)
+  })
+
+const provider = new GoogleAuthProvider()
+
+export { auth, db, provider }

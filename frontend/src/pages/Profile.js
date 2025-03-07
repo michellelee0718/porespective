@@ -1,20 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { auth, db } from "../firebase-config";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import React, { useEffect, useState } from "react"
+import { auth, db } from "../firebase-config"
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore"
 import {
   initDailyCheckIn,
   markRoutineCompleted,
   getRoutineCheckInStatus,
-} from "../firebase/routineService";
+} from "../firebase/routineService"
+import { useAuthState } from "react-firebase-hooks/auth"
 
 const Profile = () => {
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
+  const [user, loading] = useAuthState(auth)
+  const [userData, setUserData] = useState(null)
+  const [editing, setEditing] = useState(false)
   const [routineStatus, setRoutineStatus] = useState({
     amCompleted: false,
     pmCompleted: false,
-  });
+  })
   const [formData, setFormData] = useState({
     fullName: "",
     gender: "",
@@ -22,133 +23,134 @@ const Profile = () => {
     skinConcerns: "",
     allergies: "",
     skincareRoutine: { am: "", pm: "" },
-  });
+  })
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (auth.currentUser) {
-        const userRef = doc(db, "users", auth.currentUser.uid);
-        const docSnap = await getDoc(userRef);
+      if (!user) return
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setUserData(data);
-          setFormData({
-            fullName: data.fullName || auth.currentUser?.displayName || "",
-            gender: data.gender || "",
-            skinType: data.skinType || "",
-            skinConcerns: data.skinConcerns || "",
-            allergies: data.allergies || "",
-            skincareRoutine: {
-              am: data.skincareRoutine?.am || "",
-              pm: data.skincareRoutine?.pm || "",
-            },
-          });
+      const userRef = doc(db, "users", user.uid)
+      const docSnap = await getDoc(userRef)
 
-          // Initialize check-in status for today if needed
-          const status = await getRoutineCheckInStatus();
-          if (status) {
-            setRoutineStatus({
-              amCompleted: status.amCompleted,
-              pmCompleted: status.pmCompleted,
-            });
-          }
-        } else {
-          // If user doesn't exist, initialize with default values
-          setFormData({
-            fullName: auth.currentUser?.displayName || "",
-            gender: "",
-            skinType: "",
-            skinConcerns: "",
-            allergies: "",
-            skincareRoutine: { am: "", pm: "" },
-          });
+      if (docSnap.exists()) {
+        const data = docSnap.data()
+        setUserData(data)
+        setFormData({
+          fullName: data.fullName || user?.displayName || "",
+          gender: data.gender || "",
+          skinType: data.skinType || "",
+          skinConcerns: data.skinConcerns || "",
+          allergies: data.allergies || "",
+          skincareRoutine: {
+            am: data.skincareRoutine?.am || "",
+            pm: data.skincareRoutine?.pm || "",
+          },
+        })
 
-          // Initialize a fresh check-in record
-          await initDailyCheckIn();
+        // Initialize check-in status for today if needed
+        const status = await getRoutineCheckInStatus()
+        if (status) {
+          setRoutineStatus({
+            amCompleted: status.amCompleted,
+            pmCompleted: status.pmCompleted,
+          })
         }
-      }
-      setLoading(false);
-    };
+      } else {
+        // If user doesn't exist, initialize with default values
+        setFormData({
+          fullName: user?.displayName || "",
+          gender: "",
+          skinType: "",
+          skinConcerns: "",
+          allergies: "",
+          skincareRoutine: { am: "", pm: "" },
+        })
 
-    fetchUserData();
+        // Initialize a fresh check-in record
+        await initDailyCheckIn()
+      }
+    }
+
+    if (!loading) {
+      fetchUserData()
+    }
 
     // Set up check-in reset at midnight
     const checkMidnightReset = () => {
-      const now = new Date();
+      const now = new Date()
       if (now.getHours() === 0 && now.getMinutes() === 0) {
-        initDailyCheckIn().then((status) => {
+        initDailyCheckIn().then(status => {
           if (status) {
             setRoutineStatus({
               amCompleted: status.amCompleted,
               pmCompleted: status.pmCompleted,
-            });
+            })
           }
-        });
+        })
       }
-    };
+    }
 
-    const resetInterval = setInterval(checkMidnightReset, 60000); // Check every minute
+    const resetInterval = setInterval(checkMidnightReset, 60000) // Check every minute
 
-    return () => clearInterval(resetInterval);
-  }, []);
+    return () => clearInterval(resetInterval)
+  }, [user, loading])
 
   // Handle input changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const handleChange = e => {
+    const { name, value } = e.target
     if (name.startsWith("skincareRoutine")) {
-      const routineType = name.split(".")[1]; // Extract "am" or "pm"
-      setFormData((prev) => ({
+      const routineType = name.split(".")[1] // Extract "am" or "pm"
+      setFormData(prev => ({
         ...prev,
         skincareRoutine: { ...prev.skincareRoutine, [routineType]: value },
-      }));
+      }))
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData(prev => ({ ...prev, [name]: value }))
     }
-  };
+  }
 
   // Save data to Firestore
   const handleSave = async () => {
-    if (auth.currentUser) {
-      const userRef = doc(db, "users", auth.currentUser.uid);
-      const docSnap = await getDoc(userRef);
+    if (user) {
+      const userRef = doc(db, "users", user.uid)
+      const docSnap = await getDoc(userRef)
 
       if (docSnap.exists()) {
-        await updateDoc(userRef, formData); // Update existing user
+        await updateDoc(userRef, formData) // Update existing user
       } else {
-        await setDoc(userRef, formData); // Create a new user if none exists
+        await setDoc(userRef, formData) // Create a new user if none exists
       }
 
-      setUserData(formData);
-      setEditing(false);
+      setUserData(formData)
+      setEditing(false)
     }
-  };
+  }
 
   // Handle routine check-in
-  const handleRoutineCheckIn = async (routineType) => {
+  const handleRoutineCheckIn = async routineType => {
     try {
-      await markRoutineCompleted(routineType);
-      setRoutineStatus((prev) => ({
+      await markRoutineCompleted(routineType)
+      setRoutineStatus(prev => ({
         ...prev,
         [routineType === "am" ? "amCompleted" : "pmCompleted"]: true,
-      }));
+      }))
     } catch (error) {
       // Show an error message to the user
-      console.error("Error marking routine as completed:", error);
+      console.error("Error marking routine as completed:", error)
     }
-  };
+  }
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p>Loading...</p>
 
   return (
     <div className="profile-container">
       <div className="profile-header">
         <div className="profile-avatar">
-          {auth.currentUser?.photoURL ? (
+          {user?.photoURL ? (
             <img
-              src={auth.currentUser.photoURL}
+              src={user.photoURL}
               alt="Profile"
-              onError={(e) => (e.target.style.display = "none")}
+              onError={e => (e.target.style.display = "none")}
             />
           ) : (
             <span className="profile-avatar-icon">👤</span>
@@ -164,10 +166,10 @@ const Profile = () => {
             />
           ) : (
             <p className="profile-name">
-              {userData?.fullName || auth.currentUser?.displayName}
+              {userData?.fullName || user?.displayName}
             </p>
           )}
-          <p className="profile-email">{auth.currentUser?.email}</p>
+          <p className="profile-email">{user?.email}</p>
         </div>
       </div>
 
@@ -339,7 +341,7 @@ const Profile = () => {
         </button>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default Profile;
+export default Profile

@@ -1,44 +1,44 @@
-import React, { useEffect, useState } from "react";
-import "./App.css";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Profile from "./pages/Profile";
-import Results from "./pages/Results"; // Import Results page
-import { ThemeProvider } from "./context/ThemeContext";
-import { useTheme } from "./context/ThemeContext";
-import { signOut } from "firebase/auth";
-import { auth } from "./firebase-config";
-import { useAuthState } from "react-firebase-hooks/auth";
-import ThemeToggle from "./components/ThemeToggle";
-import { scheduleNotifications } from "./components/Notification";
-import { initDailyCheckIn } from "./firebase/routineService";
-import "./components/RoutineCheckIn.css";
+import React, { useEffect, useState } from "react"
+import "./App.css"
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom"
+import Home from "./pages/Home"
+import Login from "./pages/Login"
+import Profile from "./pages/Profile"
+import Results from "./pages/Results" // Import Results page
+import { ThemeProvider } from "./context/ThemeContext"
+import { useTheme } from "./context/ThemeContext"
+import { signOut } from "firebase/auth"
+import { auth } from "./firebase-config"
+import { useAuthState } from "react-firebase-hooks/auth"
+import ThemeToggle from "./components/ThemeToggle"
+import { scheduleNotifications } from "./components/Notification"
+import { initDailyCheckIn } from "./firebase/routineService"
+import "./components/RoutineCheckIn.css"
 
 function AppContent() {
-  const { isDarkMode } = useTheme();
-  const [isAuth, setIsAuth] = useState(false);
-  const [user] = useAuthState(auth);
+  const { isDarkMode } = useTheme()
+  const [isAuth, setIsAuth] = useState(false)
+  const [user] = useAuthState(auth)
 
   useEffect(() => {
     if (user) {
-      setIsAuth(true);
+      setIsAuth(true)
 
       // Initialize today's check-in status
-      initDailyCheckIn();
+      initDailyCheckIn()
 
       // Schedule notifications
-      scheduleNotifications();
+      scheduleNotifications()
     }
-  }, [user]);
+  }, [user])
 
   const signUserOut = () => {
     signOut(auth).then(() => {
-      localStorage.clear();
-      setIsAuth(false);
-      window.location.pathname = "/login";
-    });
-  };
+      // localStorage.clear();
+      setIsAuth(false)
+      window.location.pathname = "/login"
+    })
+  }
 
   return (
     <div className={`app ${isDarkMode ? "dark-mode" : "light-mode"}`}>
@@ -82,7 +82,7 @@ function AppContent() {
         </Routes>
       </Router>
     </div>
-  );
+  )
 }
 
 function App() {
@@ -90,7 +90,7 @@ function App() {
     <ThemeProvider>
       <AppContent />
     </ThemeProvider>
-  );
+  )
 }
 
-export default App;
+export default App

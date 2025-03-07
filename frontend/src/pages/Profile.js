@@ -302,16 +302,18 @@ const Profile = () => {
           </div>
         </div>
       </div>
-
+      <div className="button-container">
       <button className="profile-edit-button" onClick={() => setEditing(!editing)}>
         {editing ? "Cancel" : "Edit"}
       </button>
-
+      </div>
+      <div className="button-container">
       {editing && (
         <button className="profile-save-button" onClick={handleSave}>
           Save
         </button>
       )}
+      </div>
     </div>
   );
 };

@@ -17,7 +17,7 @@
   flex: 1;
   padding: 15px;
   border-radius: 8px;
-  background-color: #f9f9f9;
+  background-color: #ffd3dc;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
@@ -35,8 +35,8 @@
 }
 
 .checkin-button {
-  background-color: #4CAF50;
-  color: white;
+  background-color: #a3e5ab;
+  color: black;
   border: none;
   padding: 8px 16px;
   border-radius: 4px;
@@ -46,7 +46,7 @@
 }
 
 .checkin-button:hover {
-  background-color: #45a049;
+  background-color: #72b976;
 }
 
 .checkin-button:disabled {
@@ -56,12 +56,12 @@
 
 /* Dark mode styles */
 .dark-mode .routine-checkin-container {
-  background-color: #333;
+  background-color: #456a91;
   color: #fff;
 }
 
 .dark-mode .routine-card {
-  background-color: #444;
+  background-color: #2d4a6e;
   color: #eee;
 }
 

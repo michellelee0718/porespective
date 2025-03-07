@@ -14,7 +14,7 @@ function Home() {
       </div>
 
       <div className="search-bar">
-        <Form
+        <Form className ="search"
           placeHolder="Search for a product"
           isSearching={(event) => setSearchKeyword(event.target.value)}
         />

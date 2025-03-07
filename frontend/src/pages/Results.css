@@ -100,6 +100,7 @@ font-size: 1.1rem;
 cursor: pointer;
 margin: 20px 0;
 transition: background-color 0.3s ease;
+font-weight: bold;
 }
 
 .ask-ai-button:hover {

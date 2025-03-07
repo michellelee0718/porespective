@@ -7,6 +7,7 @@ prompt_template_recommendation = PromptTemplate(
         "The user provided this product information:\n"
         "{input}\n\n"
         "Should the user use this product? Provide a concise explanation within 50 words."
+        "Provide your response in text format without any special formatting, headers, or bullet points."
     )
 )
 

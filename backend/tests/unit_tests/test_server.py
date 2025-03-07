@@ -16,7 +16,7 @@ def client():
 ### Test for the /recommend endpoint
 def test_recommend_product_success(client, mocker):
     """
-    Test a successful POST /recommend request with valid product_name.
+    Test a successful POST /recommend request with valid product_name, ingredients, and user_profile.
     """
     # Mock the streaming function
     mock_stream = mocker.MagicMock()
@@ -33,11 +33,15 @@ def test_recommend_product_success(client, mocker):
             {"name": "Ingredient 1", "score": "1"},
             {"name": "Ingredient 2", "score": "2"},
         ],
+        "user_profile": {
+            "skinType": "Oily",
+            "skinConcerns": "Acne",
+            "allergies": "None",
+        },
     }
 
     response = client.post("/recommend", json=request_json)
     assert response.status_code == 200
-
     response_data = "".join([line.decode() for line in response.response])
 
     assert 'data: {"content": "This is a safe product. Recommend it."}' in response_data
@@ -61,23 +65,31 @@ def test_recommend_product_with_session_id(client, mocker):
             {"name": "Ingredient 2", "score": 2},
         ],
         "session_id": "test_session_123",
+        "user_profile": {
+            "skinType": "Dry",
+            "skinConcerns": "Eczema",
+            "allergies": "Fragrance",
+        },
     }
 
     response = client.post("/recommend", json=request_json)
     assert response.status_code == 200
-
     response_data = "".join([line.decode() for line in response.response])
 
     assert 'data: {"content": "Session ID test passed."}' in response_data
 
 
-def test_recommend_product_missing_name(client):
+def test_recommend_product_missing_name_empty(client):
     """
-    Test /recommend error if product_name is missing.
+    Test /recommend error if ingredient name is missing.
     """
     response = client.post(
         "/recommend",
-        json={"ingredients": [{"name": "Ingredient 1", "score": "1"}]},
+        json={
+            "product_name": "",
+            "ingredients": "Ingredient 1",
+            "user_profile": {"skinType": "Oily"},
+        },
     )
     assert response.status_code == 400
     data = response.get_json()
@@ -85,30 +97,90 @@ def test_recommend_product_missing_name(client):
     assert data["error"] == "Missing product_name"
 
 
+def test_recommend_product_missing_name_none(client):
+    """
+    Test /recommend error if ingredient name is None.
+    """
+    response = client.post(
+        "/recommend",
+        json={
+            "product_name": None,
+            "ingredients": "Ingredient 1",
+            "user_profile": {"skinType": "Oily"},
+        },
+    )
+    assert response.status_code == 400
+    data = response.get_json()
+    assert "error" in data
+    assert data["error"] == "Missing product_name"
+
+
+def test_recommend_product_no_ingredients(client):
+    """
+    Test /recommend error if ingredients is missing when there is no "ingredient" key.
+    """
+    response = client.post(
+        "/recommend",
+        json={"product_name": "Product A", "user_profile": {"skinType": "Oily"}},
+    )
+    assert response.status_code == 400
+    data = response.get_json()
+    assert "error" in data
+    assert data["error"] == "Missing ingredients"
+
+
+def test_recommend_product_ingredients_none(client):
+    """
+    Test /recommend error if ingredients is missing when the ingredients is None.
+    """
+    response = client.post(
+        "/recommend",
+        json={
+            "product_name": "Product A",
+            "ingredients": None,
+            "user_profile": {"skinType": "Oily"},
+        },
+    )
+    assert response.status_code == 400
+    data = response.get_json()
+    assert "error" in data
+    assert data["error"] == "Missing ingredients"
+
+
+def test_recommend_product_ingredients_empty(client):
+    """
+    Test /recommend error if ingredients is missing when the ingredients is empty".
+    """
+    response = client.post(
+        "/recommend",
+        json={
+            "product_name": "Product A",
+            "ingredients": "",
+            "user_profile": {"skinType": "Oily"},
+        },
+    )
+    assert response.status_code == 400
+    data = response.get_json()
+    assert "error" in data
+    assert data["error"] == "Missing ingredients"
+
+
 def test_recommend_product_invalid_ingredients(client):
     """
     Test /recommend error if ingredients is not a list.
     """
     response = client.post(
-        "/recommend", json={"product_name": "Product A", "ingredients": "Ingredient 1"}
+        "/recommend",
+        json={
+            "product_name": "Product A",
+            "ingredients": "Ingredient 1",
+            "user_profile": {"skinType": "Oily"},
+        },
     )
     assert response.status_code == 400
     data = response.get_json()
     assert "error" in data
-    assert data["error"] == "Missing or invalid ingredients"
-
-
-def test_recommend_product_empty_ingredients(client):
-    """
-    Test /recommend error if ingredients is an empty list (invalid).
-    """
-    response = client.post(
-        "/recommend", json={"product_name": "Product A", "ingredients": []}
-    )
-    assert response.status_code == 400
-    data = response.get_json()
-    assert "error" in data
-    assert data["error"] == "Missing or invalid ingredients"
+    assert data["error"] == "Invalid ingredients (Should be a list)"
 
 
 def test_recommend_stream_error(client, mocker):
@@ -125,6 +197,11 @@ def test_recommend_stream_error(client, mocker):
         json={
             "product_name": "Product",
             "ingredients": [{"name": "Ingredient 1", "score": "1"}],
+            "user_profile": {
+                "skinType": "Combination",
+                "skinConcerns": "Hyperpigmentation",
+                "allergies": "None",
+            },
         },
     )
     assert (
@@ -132,7 +209,6 @@ def test_recommend_stream_error(client, mocker):
     )  # SSE responses should not use 500, instead return errors in the stream
 
     response_data = "".join([line.decode() for line in response.response])
-
     assert 'data: {"error": "LLM Streaming error"}' in response_data
 
 

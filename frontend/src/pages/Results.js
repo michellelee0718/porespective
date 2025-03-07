@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import "./Results.css";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase-config";
 
 const Results = () => {
   const location = useLocation();
@@ -18,6 +20,29 @@ const Results = () => {
   const [messages, setMessages] = useState([]);
 
   const fetchRecommendation = async () => {
+    console.log("Fetching user profile...");
+    let userProfile = {};
+
+    if (auth.currentUser) {
+      try {
+        const userRef = doc(db, "users", auth.currentUser.uid);
+        const docSnap = await getDoc(userRef);
+
+        if (docSnap.exists()) {
+          userProfile = docSnap.data();
+          console.log("Retrieved user profile from Firestore:", userProfile);
+        } else {
+          console.warn("User profile not found in Firestore.");
+        }
+      } catch (error) {
+        console.error("Error fetching user profile from Firestore:", error);
+      }
+    } else {
+      console.warn("No authenticated user found.");
+    }
+
+    console.log("Final User Profile sent to backend:", userProfile);
+
     console.log("Fetching recommendation...");
     setIsLoading(true);
     try {
@@ -31,6 +56,7 @@ const Results = () => {
         body: JSON.stringify({
           product_name: productName,
           ingredients: ingredients,
+          user_profile: userProfile,
         }),
       });
 

@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import { auth, db } from "../firebase-config";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { initDailyCheckIn, markRoutineCompleted, getRoutineCheckInStatus } from "../firebase/routineService";
+import { resetNotifications } from "../components/Notification";
 
 const Profile = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [routineStatus, setRoutineStatus] = useState({ amCompleted: false, pmCompleted: false });
+  
   const [formData, setFormData] = useState({
     fullName: "",
     gender: "",
@@ -78,6 +80,7 @@ const Profile = () => {
             });
           }
         });
+        resetNotifications();
       }
     };
     

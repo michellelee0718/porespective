@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext } from "react";
 
 export const ThemeContext = createContext();
 
@@ -13,14 +13,14 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     // load saved preferences
-    const savedMode = localStorage.getItem('themeMode');
-    const savedAutoMode = localStorage.getItem('autoMode');
-    
+    const savedMode = localStorage.getItem("themeMode");
+    const savedAutoMode = localStorage.getItem("autoMode");
+
     if (savedMode) {
-      setIsDarkMode(savedMode === 'dark');
+      setIsDarkMode(savedMode === "dark");
     }
     if (savedAutoMode) {
-      setIsAutoMode(savedAutoMode === 'true');
+      setIsAutoMode(savedAutoMode === "true");
     }
   }, []);
 
@@ -34,27 +34,29 @@ export const ThemeProvider = ({ children }) => {
 
   const toggleTheme = () => {
     // toggle theme
-    setIsDarkMode(prev => {
+    setIsDarkMode((prev) => {
       const newMode = !prev;
-      localStorage.setItem('themeMode', newMode ? 'dark' : 'light');
+      localStorage.setItem("themeMode", newMode ? "dark" : "light");
       return newMode;
     });
   };
 
   const toggleAutoMode = () => {
     // toggle auto mode
-    setIsAutoMode(prev => {
+    setIsAutoMode((prev) => {
       const newAutoMode = !prev;
-      localStorage.setItem('autoMode', newAutoMode.toString());
+      localStorage.setItem("autoMode", newAutoMode.toString());
       return newAutoMode;
     });
   };
 
   return (
-    <ThemeContext.Provider value={{ isDarkMode, isAutoMode, toggleTheme, toggleAutoMode }}>
+    <ThemeContext.Provider
+      value={{ isDarkMode, isAutoMode, toggleTheme, toggleAutoMode }}
+    >
       {children}
     </ThemeContext.Provider>
   );
 };
 
-export const useTheme = () => useContext(ThemeContext); 
+export const useTheme = () => useContext(ThemeContext);

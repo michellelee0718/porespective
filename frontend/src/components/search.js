@@ -11,34 +11,38 @@ const Search = () => {
     if (!query.trim()) return;
 
     try {
-      const response = await fetch(`http://127.0.0.1:5000/get_ingredients?product=${encodeURIComponent(query)}`);
+      const response = await fetch(
+        `http://127.0.0.1:5000/get_ingredients?product=${encodeURIComponent(
+          query,
+        )}`,
+      );
       const data = await response.json();
 
       if (data.ingredients) {
-        navigate("/results", { 
-          state: { 
-            productName: data.product_name || query,  // Use actual product name from server
+        navigate("/results", {
+          state: {
+            productName: data.product_name || query, // Use actual product name from server
             ingredients: data.ingredients,
-            productUrl: data.product_url // Pass product URL as well
-          } 
+            productUrl: data.product_url, // Pass product URL as well
+          },
         });
       } else {
-        navigate("/results", { 
-          state: { 
+        navigate("/results", {
+          state: {
             productName: data.product_name || query,
             ingredients: [{ name: "No data found", score: "N/A" }],
-            productUrl: data.product_url 
-          } 
+            productUrl: data.product_url,
+          },
         });
       }
     } catch (error) {
       console.error("Error fetching data:", error);
-      navigate("/results", { 
-        state: { 
-          productName: query, 
+      navigate("/results", {
+        state: {
+          productName: query,
           ingredients: [{ name: "Error fetching data", score: "N/A" }],
-          productUrl: ""
-        } 
+          productUrl: "",
+        },
       });
     }
   };

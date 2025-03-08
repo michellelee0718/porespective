@@ -1,5 +1,6 @@
 import json
 from contextlib import closing
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -32,7 +33,21 @@ def read_stream_response(response):
     return chunks
 
 
-def test_recommend_streaming_response(client):
+@pytest.fixture
+def mock_llm():
+    with patch("backend.server.get_llm") as mock:
+        # Create a mock LLM that returns streamed responses
+        mock_instance = MagicMock()
+        mock_instance.stream.return_value = [
+            {"content": "Test"},
+            {"content": " response"},
+            {"content": " stream"},
+        ]
+        mock.return_value = mock_instance
+        yield mock
+
+
+def test_recommend_streaming_response(client, mock_llm):
     """Test that /recommend endpoint returns a streaming response"""
     test_data = {
         "product_name": "Test Product",
@@ -64,7 +79,7 @@ def test_recommend_streaming_response(client):
         assert len(full_response) > 0
 
 
-def test_chat_streaming_response(client):
+def test_chat_streaming_response(client, mock_llm):
     """Test that /chat endpoint returns a streaming response"""
     # First create a session through /recommend
     initial_data = {

@@ -1,4 +1,10 @@
-import { render, waitFor, act, screen, fireEvent } from "@testing-library/react";
+import {
+  render,
+  waitFor,
+  act,
+  screen,
+  fireEvent,
+} from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import Results from "../../pages/Results";
 import { auth, db } from "../../firebase-config";
@@ -25,11 +31,15 @@ const createMockStream = (chunks) => {
   let index = 0;
   return new ReadableStream({
     start(controller) {
-      chunks.forEach(chunk => {
-        controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ content: chunk })}\n\n`));
+      chunks.forEach((chunk) => {
+        controller.enqueue(
+          new TextEncoder().encode(
+            `data: ${JSON.stringify({ content: chunk })}\n\n`,
+          ),
+        );
       });
       controller.close();
-    }
+    },
   });
 };
 
@@ -173,7 +183,7 @@ describe("Streaming functionality", () => {
   it("handles streaming chat response", async () => {
     const mockRecommendChunks = ["Initial recommendation"];
     const mockChatChunks = ["Chat", " response", " stream"];
-    
+
     // Mock initial recommendation
     fetch.mockResolvedValueOnce({
       ok: true,
@@ -219,7 +229,9 @@ describe("Streaming functionality", () => {
     });
 
     // Send chat message
-    const input = screen.getByPlaceholderText("Type your follow-up question...");
+    const input = screen.getByPlaceholderText(
+      "Type your follow-up question...",
+    );
     const sendButton = screen.getByText("Send");
 
     await act(async () => {
@@ -236,7 +248,7 @@ describe("Streaming functionality", () => {
 
   it("handles streaming errors gracefully", async () => {
     fetch.mockRejectedValueOnce(new Error("Network error"));
-    
+
     getDoc.mockResolvedValueOnce({
       exists: () => true,
       data: () => ({ age: 25 }),
@@ -256,7 +268,9 @@ describe("Streaming functionality", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText("Failed to fetch recommendation.")).toBeInTheDocument();
+      expect(
+        screen.getByText("Failed to fetch recommendation."),
+      ).toBeInTheDocument();
     });
   });
 });

@@ -1,5 +1,7 @@
+from unittest.mock import MagicMock
+
 import pytest
-from unittest.mock import patch, MagicMock
+
 from backend.scraper import scrape_product_ingredients
 
 
@@ -26,7 +28,7 @@ def test_scrape_product_ingredients_cached(mock_cache):
     mock_get_cached_product.return_value = {
         "product_url": "https://example.com",
         "product_name": "CeraVe Moisturizing Cream",
-        "ingredients": [{"name": "Water", "score": "1"}]
+        "ingredients": [{"name": "Water", "score": "1"}],
     }
 
     result = scrape_product_ingredients("CeraVe Moisturizing Cream")
@@ -45,7 +47,9 @@ def test_scrape_product_ingredients_live_scrape(mock_browser, mock_cache):
     mock_get_cached_product.return_value = None  # No cache
 
     # Mock finding product link
-    mock_browser.find_element.return_value.get_attribute.return_value = "https://example.com"
+    mock_browser.find_element.return_value.get_attribute.return_value = (
+        "https://example.com"
+    )
 
     # Mock product name extraction to return a real string
     mock_browser.find_element.return_value.text.strip.return_value = "Unknown Product"
@@ -68,5 +72,3 @@ def test_scrape_product_ingredients_live_scrape(mock_browser, mock_cache):
     assert result["ingredients"][0]["score"] == "1"
 
     mock_cache_product_data.assert_called_once()  # Should save new cache
-
-

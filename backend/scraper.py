@@ -4,8 +4,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
-from backend.cache import get_cached_product, cache_product_data
-import time
+
+from backend.cache import cache_product_data, get_cached_product
+
 
 def scrape_product_ingredients(product_name):
     """

@@ -27,9 +27,11 @@ export const scheduleNotifications = async () => {
     const docSnap = await getDoc(userRef);
     if (!docSnap.exists()) return;
 
+
   
     const userData = docSnap.data();
     if (!userData) return;
+
 
 
     const am = userData.skincareRoutine.am;
@@ -42,7 +44,7 @@ export const scheduleNotifications = async () => {
     if (!am && !pm && !amCompleted && !pmCompleted) return;
     
     const now = new Date();
-    
+
     let hours = now.getHours();
 
 

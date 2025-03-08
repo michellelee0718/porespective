@@ -1,7 +1,9 @@
 import string
-import pytest
-from backend.utils import generate_session_id, get_or_create_conversation
 from unittest.mock import MagicMock, patch
+
+import pytest
+
+from backend.utils import generate_session_id, get_or_create_conversation
 
 
 ### Test for the generate_session_id() function
@@ -41,13 +43,17 @@ def mock_conversation_chain():
     """
     return MagicMock(name="MockConversationChain")
 
+
 @pytest.fixture
 def mock_create_conversation_chain(mock_conversation_chain):
     """
     Patch create_conversation_chain and return a mock conversation chain.
     """
-    with patch("backend.utils.create_conversation_chain", return_value=mock_conversation_chain) as mock:
+    with patch(
+        "backend.utils.create_conversation_chain", return_value=mock_conversation_chain
+    ) as mock:
         yield mock
+
 
 def test_create_new_conversation(mock_create_conversation_chain):
     """
@@ -63,7 +69,10 @@ def test_create_new_conversation(mock_create_conversation_chain):
     assert isinstance(result, MagicMock)
     mock_create_conversation_chain.assert_called_once()
 
-def test_retrieve_existing_conversation(mock_create_conversation_chain, mock_conversation_chain):
+
+def test_retrieve_existing_conversation(
+    mock_create_conversation_chain, mock_conversation_chain
+):
     """
     Test that an existing conversation is retrieved instead of creating a new one.
     """
@@ -74,6 +83,7 @@ def test_retrieve_existing_conversation(mock_create_conversation_chain, mock_con
 
     assert result is conversation_store[session_id]
     mock_create_conversation_chain.assert_not_called()
+
 
 def test_multiple_sessions():
     """
@@ -86,7 +96,10 @@ def test_multiple_sessions():
     mock_conversation_chain_1 = MagicMock(name="MockConversationChain1")
     mock_conversation_chain_2 = MagicMock(name="MockConversationChain2")
 
-    with patch("backend.utils.create_conversation_chain", side_effect=[mock_conversation_chain_1, mock_conversation_chain_2]):
+    with patch(
+        "backend.utils.create_conversation_chain",
+        side_effect=[mock_conversation_chain_1, mock_conversation_chain_2],
+    ):
         result_1 = get_or_create_conversation(conversation_store, session_id_1)
         result_2 = get_or_create_conversation(conversation_store, session_id_2)
 

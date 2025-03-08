@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -121,18 +122,69 @@ def scrape_product_ingredients(product_name):
 
     # Extract ingredient names
     ingredient_elements = driver.find_elements(
-        By.CSS_SELECTOR, "td.td-ingredient .td-ingredient-interior"
+        By.CSS_SELECTOR,
+        "tr.ingredient-overview-tr td.td-ingredient .td-ingredient-interior",
     )
     ingredients = [elem.text.strip() for elem in ingredient_elements]
 
     # Extract hazard scores
     score_elements = driver.find_elements(
-        By.CSS_SELECTOR, "td.td-score img.ingredient-score"
+        By.CSS_SELECTOR, "tr.ingredient-overview-tr td.td-score img.ingredient-score"
     )
     scores = [
         elem.get_attribute("alt").replace("Ingredient score: ", "").strip()
         for elem in score_elements
     ]
+
+    # Extract concerns from 'ingredient-more-info-wrapper' sections
+    concern_data = []
+    concern_rows = driver.find_elements(
+        By.CSS_SELECTOR,
+        "tr.ingredient-more-info-wrapper div.ingredient-more-info table tbody",
+    )
+
+    print(f"🧐 Found {len(concern_rows)} concern sections")  # Debugging output
+
+    for tbody in concern_rows:
+        try:
+            print(
+                f"🔍 Inspecting tbody: {tbody.get_attribute('outerHTML')}"
+            )  # Print full HTML of tbody
+
+            # Locate all <tr> inside the tbody
+            rows = tbody.find_elements(By.TAG_NAME, "tr")
+
+            concerns_list = []
+            for tr in rows:
+                td_elements = tr.find_elements(By.TAG_NAME, "td")
+
+                # Debugging: Print text in each <td>
+                td_texts = [td.get_attribute("outerHTML") for td in td_elements]
+                print(f"🔹 Found TDs:\n{td_texts}")
+
+                # Look for the row where the first <td> is "CONCERNS"
+                if len(td_texts) > 1 and "CONCERNS" in td_texts[0]:
+                    # Extract concerns from the second <td>
+                    concerns_html = td_elements[1].get_attribute("innerHTML").strip()
+                    soup = BeautifulSoup(concerns_html, "html.parser")
+                    concerns_cleaned = soup.get_text(
+                        separator="\n"
+                    )  # Extract clean text
+
+                    # Format concerns properly into an array
+                    concerns_list = [
+                        c.strip().replace("•", "")
+                        for c in concerns_cleaned.split("\n")
+                        if c
+                    ]
+                    print(f"✅ Extracted concerns: {concerns_list}")  # Debugging output
+                    break  # Stop after finding the concerns section
+
+            concern_data.append(concerns_list)
+
+        except Exception as e:
+            print(f"❌ Error extracting concerns: {e}")
+            concern_data.append([])
 
     driver.quit()
 
@@ -143,7 +195,12 @@ def scrape_product_ingredients(product_name):
     ingredient_data = []
     for i in range(len(ingredients)):
         score = scores[i] if i < len(scores) else "N/A"
-        ingredient_data.append({"name": ingredients[i], "score": score})
+        concerns = concern_data[i] if i < len(concern_data) else []
+        ingredient_data.append(
+            {"name": ingredients[i], "score": score, "concerns": concerns}
+        )
+
+    print("Scraped ingredient data:", ingredient_data)
 
     result = {
         "product_url": product_url,

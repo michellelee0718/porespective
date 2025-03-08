@@ -18,6 +18,7 @@ const Results = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [userMessage, setUserMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const [expandedConcerns, setExpandedConcerns] = useState({});
 
   const fetchRecommendation = async () => {
     console.log("Fetching user profile...");
@@ -277,7 +278,35 @@ const Results = () => {
       <ul className="ingredient-list">
         {ingredients.map((item, index) => (
           <li key={index} className={`ingredient-item score-${item.score}`}>
-            {item.name} - <strong>Score: {parseInt(item.score, 10)}</strong>
+            <div className="ingredient-header">
+              {item.name} - <strong>Score: {parseInt(item.score, 10)}</strong>
+              {item.concerns && item.concerns.length > 0 && (
+                <button
+                  className="toggle-concerns"
+                  onClick={() =>
+                    setExpandedConcerns((prevState) => ({
+                      ...prevState,
+                      [index]: !prevState[index],
+                    }))
+                  }
+                >
+                  {expandedConcerns[index]
+                    ? "▼ Hide Concerns"
+                    : "▶ Show Concerns"}
+                </button>
+              )}
+            </div>
+
+            {/* Conditionally show concerns when expanded */}
+            {expandedConcerns[index] && item.concerns.length > 0 && (
+              <ul className="concerns-list">
+                {item.concerns.map((concern, idx) => (
+                  <li key={idx} className="concern-item">
+                    {concern}
+                  </li>
+                ))}
+              </ul>
+            )}
           </li>
         ))}
       </ul>

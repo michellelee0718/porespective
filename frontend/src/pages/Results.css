@@ -46,7 +46,7 @@
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  width: 30%;
+  width: 33%;
   margin-top: 10px;
 }
 
@@ -331,4 +331,28 @@
 
 .dark-mode .ingredient-item {
   border-color: #555;
+}
+
+.concerns-list {
+  margin-left: 20px;
+  padding-left: 10px;
+  border-left: 2px solid #ccc;
+}
+
+.concern-item {
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.toggle-concerns {
+  margin-left: 10px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: blue;
+  font-size: 14px;
+}
+
+.toggle-concerns:hover {
+  text-decoration: underline;
 }

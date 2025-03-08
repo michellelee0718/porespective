@@ -2,22 +2,52 @@ import React from "react";
 import { auth, provider, db } from "../firebase-config";
 import { signInWithPopup } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { getTodayDateString } from "../firebase/routineService";
 
 function Login({ setIsAuth }) {
   let navigate = useNavigate();
 
-  const signInWithGoogle = async () => {
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    const userRef = doc(db, "users", user.uid);
-    await setDoc(userRef, {
-      email: user.email,
-    });
+  const handleLoginSuccess = async (user) => {
+    try {
+      const userRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(userRef);
 
-    localStorage.setItem("isAuth", true);
-    setIsAuth(true);
-    navigate("/");
+      if (!docSnap.exists()) {
+        const userData = {
+          fullName: user.displayName || "",
+          email: user.email || "",
+          createdAt: new Date(),
+          skincareRoutine: { am: "", pm: "" },
+          routineCheckIn: {
+            lastResetDate: getTodayDateString(),
+            amCompleted: false,
+            pmCompleted: false,
+          },
+        };
+
+        await setDoc(userRef, userData);
+        console.log("Created new user document");
+      } else {
+        console.log("User document exists");
+      }
+
+      localStorage.setItem("isAuth", "true");
+      setIsAuth(true);
+      navigate("/");
+    } catch (error) {
+      console.error("Error handling login:", error);
+    }
+  };
+
+  const signInWithGoogle = () => {
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        handleLoginSuccess(result.user);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
   return (
     <div className="loginPage">

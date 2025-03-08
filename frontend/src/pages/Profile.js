@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { auth, db } from "../firebase-config";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import {
   initDailyCheckIn,
   markRoutineCompleted,
@@ -24,11 +24,12 @@ const Profile = () => {
     allergies: "",
     skincareRoutine: { am: "", pm: "" },
   });
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
       if (!user) return;
-      
+
       const userRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(userRef);
 
@@ -111,18 +112,38 @@ const Profile = () => {
 
   // Save data to Firestore
   const handleSave = async () => {
-    if (user) {
+    try {
+      setIsSaving(true);
+
+      if (!user) return;
+
       const userRef = doc(db, "users", user.uid);
-      const docSnap = await getDoc(userRef);
 
-      if (docSnap.exists()) {
-        await updateDoc(userRef, formData); // Update existing user
-      } else {
-        await setDoc(userRef, formData); // Create a new user if none exists
-      }
+      await updateDoc(userRef, {
+        fullName: formData.fullName,
+        gender: formData.gender,
+        skinType: formData.skinType,
+        skinConcerns: formData.skinConcerns,
+        allergies: formData.allergies,
+        skincareRoutine: formData.skincareRoutine,
+      });
 
-      setUserData(formData);
+      setUserData({
+        ...userData,
+        fullName: formData.fullName,
+        gender: formData.gender,
+        skinType: formData.skinType,
+        skinConcerns: formData.skinConcerns,
+        allergies: formData.allergies,
+        skincareRoutine: formData.skincareRoutine,
+      });
+
+      setIsSaving(false);
       setEditing(false);
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      setIsSaving(false);
+      alert("Error saving profile. Please try again.");
     }
   };
 

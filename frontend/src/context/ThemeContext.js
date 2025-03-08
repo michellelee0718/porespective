@@ -20,20 +20,20 @@ export const ThemeProvider = ({ children }) => {
     if (savedAutoMode) {
       setIsAutoMode(savedAutoMode === "true");
     }
-    
+
     if (savedMode) {
       setIsDarkMode(savedMode === "dark");
     } else if (savedAutoMode === "true" || savedAutoMode === null) {
       const isDark = checkTime();
       setIsDarkMode(isDark);
     }
-    
+
     setInitialLoadComplete(true);
   }, []);
 
   useEffect(() => {
     if (!initialLoadComplete) return;
-    
+
     if (isAutoMode) {
       const isDark = checkTime();
       setIsDarkMode(isDark);

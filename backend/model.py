@@ -4,7 +4,11 @@ from langchain.memory import ConversationBufferMemory
 from langchain_ollama import ChatOllama
 
 from backend.config.settings import LLM_BASE_URL, LLM_MODEL, LLM_TEMPERATURE
-from backend.prompt import prompt_template_followup, prompt_template_recommendation
+from backend.prompt import (
+    prompt_template_followup,
+    prompt_template_ingredient_summary,
+    prompt_template_recommendation,
+)
 
 
 def get_llm() -> ChatOllama:
@@ -84,3 +88,8 @@ def create_conversation_chain() -> ConversationChain:
     llm = get_llm()
     memory = ConversationBufferMemory(return_messages=True)
     return ConversationChain(llm=llm, memory=memory, prompt=prompt_template_followup)
+
+
+def get_ingredient_summary_chain() -> LLMChain:
+    llm = get_llm()
+    return LLMChain(llm=llm, prompt=prompt_template_ingredient_summary)

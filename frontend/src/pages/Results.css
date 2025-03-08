@@ -356,3 +356,29 @@
 .toggle-concerns:hover {
   text-decoration: underline;
 }
+
+.ingredient-summary {
+  margin-top: 20px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.summary-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.summary-item {
+  background: #d1e7fd;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #0056b3;
+}

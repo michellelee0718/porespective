@@ -52,8 +52,8 @@ def test_recommend_streaming_response(client, mock_llm):
     test_data = {
         "product_name": "Test Product",
         "ingredients": [
-            {"name": "Ingredient A", "score": "1"},
-            {"name": "Ingredient B", "score": "7"},
+            {"name": "Ingredient A", "score": "1", "concerns": ["Concern X"]},
+            {"name": "Ingredient B", "score": "7", "concerns": ["Concern Y"]},
         ],
         "user_profile": {
             "skinType": "Normal",
@@ -93,7 +93,9 @@ def test_chat_streaming_response(client, mock_llm):
 
     initial_data = {
         "product_name": "Test Product",
-        "ingredients": [{"name": "Test Ingredient", "score": "1"}],
+        "ingredients": [
+            {"name": "Test Ingredient", "score": "1", "concerns": ["Concern X"]}
+        ],
         "user_profile": {
             "skinType": "Normal",
             "skinConcerns": "None",

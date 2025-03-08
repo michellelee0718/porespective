@@ -30,8 +30,12 @@ def test_recommend_product_success(client, mocker):
     request_json = {
         "product_name": "Product A",
         "ingredients": [
-            {"name": "Ingredient 1", "score": "1"},
-            {"name": "Ingredient 2", "score": "2"},
+            {"name": "Ingredient 1", "score": "1", "concerns": ["Concern A"]},
+            {
+                "name": "Ingredient 2",
+                "score": "2",
+                "concerns": ["Concern B", "Concern C"],
+            },
         ],
         "user_profile": {
             "skinType": "Oily",
@@ -61,8 +65,8 @@ def test_recommend_product_with_session_id(client, mocker):
     request_json = {
         "product_name": "Product A",
         "ingredients": [
-            {"name": "Ingredient 1", "score": 1},
-            {"name": "Ingredient 2", "score": 2},
+            {"name": "Ingredient 1", "score": 1, "concerns": ["Concern X"]},
+            {"name": "Ingredient 2", "score": 2, "concerns": ["Concern Y"]},
         ],
         "session_id": "test_session_123",
         "user_profile": {
@@ -79,15 +83,79 @@ def test_recommend_product_with_session_id(client, mocker):
     assert 'data: {"content": "Session ID test passed."}' in response_data
 
 
+def test_recommend_product_missing_score(client):
+    """
+    Test /recommend error if an ingredient is missing a score.
+    """
+    response = client.post(
+        "/recommend",
+        json={
+            "product_name": "Product A",
+            "ingredients": [{"name": "Ingredient 1", "concerns": ["Concern A"]}],
+            "user_profile": {"skinType": "Oily"},
+        },
+    )
+    assert response.status_code == 400
+    data = response.get_json()
+    assert "error" in data
+    assert data["error"] == "Ingredient 'Ingredient 1' missing 'score' field"
+
+
+def test_recommend_product_missing_concerns(client):
+    """
+    Test /recommend error if an ingredient is missing the concerns field.
+    """
+    response = client.post(
+        "/recommend",
+        json={
+            "product_name": "Product A",
+            "ingredients": [{"name": "Ingredient 1", "score": "3"}],
+            "user_profile": {"skinType": "Oily"},
+        },
+    )
+    assert response.status_code == 400
+    data = response.get_json()
+    assert "error" in data
+    assert (
+        data["error"]
+        == "Ingredient 'Ingredient 1' missing 'concerns' field or the 'concern' field is not a list"
+    )
+
+
+def test_recommend_product_invalid_concerns_type(client):
+    """
+    Test /recommend error if concerns is not a list.
+    """
+    response = client.post(
+        "/recommend",
+        json={
+            "product_name": "Product B",
+            "ingredients": [
+                {"name": "Ingredient 1", "score": "2", "concerns": "Not a list"}
+            ],
+            "user_profile": {"skinType": "Dry"},
+        },
+    )
+    assert response.status_code == 400
+    data = response.get_json()
+    assert "error" in data
+    assert (
+        data["error"]
+        == "Ingredient 'Ingredient 1' missing 'concerns' field or the 'concern' field is not a list"
+    )
+
+
 def test_recommend_product_missing_name_empty(client):
     """
-    Test /recommend error if ingredient name is missing.
+    Test /recommend error if product name is missing (empty string).
     """
     response = client.post(
         "/recommend",
         json={
             "product_name": "",
-            "ingredients": "Ingredient 1",
+            "ingredients": [
+                {"name": "Ingredient 1", "score": "1", "concerns": ["Concern A"]}
+            ],
             "user_profile": {"skinType": "Oily"},
         },
     )
@@ -99,13 +167,15 @@ def test_recommend_product_missing_name_empty(client):
 
 def test_recommend_product_missing_name_none(client):
     """
-    Test /recommend error if ingredient name is None.
+    Test /recommend error if product name is None.
     """
     response = client.post(
         "/recommend",
         json={
             "product_name": None,
-            "ingredients": "Ingredient 1",
+            "ingredients": [
+                {"name": "Ingredient 1", "score": "1", "concerns": ["Concern A"]}
+            ],
             "user_profile": {"skinType": "Oily"},
         },
     )
@@ -113,56 +183,6 @@ def test_recommend_product_missing_name_none(client):
     data = response.get_json()
     assert "error" in data
     assert data["error"] == "Missing product_name"
-
-
-def test_recommend_product_no_ingredients(client):
-    """
-    Test /recommend error if ingredients is missing when there is no "ingredient" key.
-    """
-    response = client.post(
-        "/recommend",
-        json={"product_name": "Product A", "user_profile": {"skinType": "Oily"}},
-    )
-    assert response.status_code == 400
-    data = response.get_json()
-    assert "error" in data
-    assert data["error"] == "Missing ingredients"
-
-
-def test_recommend_product_ingredients_none(client):
-    """
-    Test /recommend error if ingredients is missing when the ingredients is None.
-    """
-    response = client.post(
-        "/recommend",
-        json={
-            "product_name": "Product A",
-            "ingredients": None,
-            "user_profile": {"skinType": "Oily"},
-        },
-    )
-    assert response.status_code == 400
-    data = response.get_json()
-    assert "error" in data
-    assert data["error"] == "Missing ingredients"
-
-
-def test_recommend_product_ingredients_empty(client):
-    """
-    Test /recommend error if ingredients is missing when the ingredients is empty".
-    """
-    response = client.post(
-        "/recommend",
-        json={
-            "product_name": "Product A",
-            "ingredients": "",
-            "user_profile": {"skinType": "Oily"},
-        },
-    )
-    assert response.status_code == 400
-    data = response.get_json()
-    assert "error" in data
-    assert data["error"] == "Missing ingredients"
 
 
 def test_recommend_product_invalid_ingredients(client):
@@ -196,7 +216,9 @@ def test_recommend_stream_error(client, mocker):
         "/recommend",
         json={
             "product_name": "Product",
-            "ingredients": [{"name": "Ingredient 1", "score": "1"}],
+            "ingredients": [
+                {"name": "Ingredient 1", "score": "1", "concerns": ["Concern X"]}
+            ],
             "user_profile": {
                 "skinType": "Combination",
                 "skinConcerns": "Hyperpigmentation",

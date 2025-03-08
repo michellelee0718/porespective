@@ -486,56 +486,5 @@
       }
     ],
     "last_updated": "2025-03-06T22:45:45.104930"
-  },
-  "Kiehl's": {
-    "product_url": "https://www.ewg.org/skindeep/products/2023103-Kiehls_Avocado_Nourishing_Hydration_Mask_34_Ounces/",
-    "product_name": "Kiehl's Avocado Nourishing Hydration Mask 3.4 Ounces",
-    "ingredients": [
-      {
-        "name": "ALCOHOL DENATURED",
-        "score": "01"
-      },
-      {
-        "name": "FRAGRANCE",
-        "score": "08"
-      },
-      {
-        "name": "WATER",
-        "score": "01"
-      },
-      {
-        "name": "LIMONENE",
-        "score": "04"
-      },
-      {
-        "name": "LINALOOL",
-        "score": "03"
-      },
-      {
-        "name": "CITRAL",
-        "score": "03"
-      },
-      {
-        "name": "CITRONELLOL",
-        "score": "03"
-      },
-      {
-        "name": "GERANIOL",
-        "score": "03"
-      },
-      {
-        "name": "COUMARIN",
-        "score": "04"
-      },
-      {
-        "name": "BENZYL BENZOATE",
-        "score": "04"
-      },
-      {
-        "name": "ALPHA-ISOMETHYL IONONE",
-        "score": "03"
-      }
-    ],
-    "last_updated": "2025-03-06T22:56:54.595101"
   }
 }

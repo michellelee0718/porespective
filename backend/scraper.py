@@ -4,15 +4,60 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
-<<<<<<< HEAD
 from backend.cache import get_cached_product, cache_product_data
 import time
-=======
-
->>>>>>> origin/main
 
 def scrape_product_ingredients(product_name):
-    """Search for a product and scrape its ingredient details from EWG Skin Deep"""
+    """
+    Search for a skincare product on the EWG Skin Deep database and extract ingredient details.
+
+    Args:
+        product_name (str): The searching keyword.
+
+    Returns:
+        JSON: A JSON response containing the product's URL, name, and a list of ingredients with their hazard scores.
+              If the product is not found, an error message is returned.
+
+    Description:
+        - First checks if cached data exists for the product to avoid unnecessary web scraping.
+        - If no cache is available, performs a web search on the EWG website.
+        - Extracts the first product result, navigates to its details page, and scrapes ingredient information.
+        - Stores the retrieved data in a local cache to optimize future requests.
+
+    Response Format:
+    ```
+    {
+        "product_url": "https://www.ewg.org/skindeep/products/123456-CeraVe_Moisturizing_Cream/",
+        "product_name": "CeraVe Moisturizing Cream",
+        "ingredients": [
+            { "name": "Water", "score": "1" },
+            { "name": "Fragrance", "score": "8" }
+        ]
+    }
+    ```
+
+    Example Request:
+    ```python
+    scrape_product_ingredients("CeraVe")
+    ```
+
+    Example Response:
+    ```json
+    {
+        "product_url": "https://www.ewg.org/skindeep/products/123456-CeraVe_Moisturizing_Cream/",
+        "product_name": "CeraVe Moisturizing Cream",
+        "ingredients": [
+            { "name": "Water", "score": "1" },
+            { "name": "Fragrance", "score": "8" }
+        ]
+    }
+    ```
+
+    Errors:
+        - If no products are found, returns: `{ "error": "No products found" }`
+        - If no ingredient data is available, returns: `{ "error": "No ingredient data found" }`
+        - If an exception occurs, returns: `{ "error": "<error message>" }`
+    """
 
     # First check if cached
     cached = get_cached_product(product_name)
@@ -105,12 +150,10 @@ def scrape_product_ingredients(product_name):
         "ingredients": ingredient_data,
     }
 
-<<<<<<< HEAD
     # cache before return
     cache_product_data(product_name, result)
     return result
-=======
->>>>>>> origin/main
+
 
 # 🔥 Test the scraper
 if __name__ == "__main__":

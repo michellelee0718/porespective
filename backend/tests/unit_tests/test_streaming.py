@@ -81,7 +81,16 @@ def test_recommend_streaming_response(client, mock_llm):
 
 def test_chat_streaming_response(client, mock_llm):
     """Test that /chat endpoint returns a streaming response"""
-    # First create a session through /recommend
+    # Mock the LLM responses for both recommend and chat endpoints
+    mock_responses = [
+        {"content": "Test"},
+        {"content": " response"},
+        {"content": " stream"},
+    ]
+
+    # Configure mock to return the same response for both calls
+    mock_llm.return_value.stream.return_value = mock_responses
+
     initial_data = {
         "product_name": "Test Product",
         "ingredients": [{"name": "Test Ingredient", "score": "1"}],
@@ -92,31 +101,37 @@ def test_chat_streaming_response(client, mock_llm):
         },
     }
 
-    # Use context manager for initial request
+    # First create a session through /recommend
     with client.post("/recommend", json=initial_data) as initial_response:
         session_id = initial_response.headers["X-Session-Id"]
-        # Read the initial response to completion
         if hasattr(initial_response, "response"):
             chunks = read_stream_response(initial_response)
 
-    # Now test chat endpoint
+    # Mock needs to be reconfigured for chat response
+    mock_llm.return_value.stream.return_value = [
+        {"content": "Chat"},
+        {"content": " response"},
+        {"content": " test"},
+    ]
+
     chat_data = {"session_id": session_id, "message": "Is this product safe?"}
 
-    # Use context manager for chat request
-    with client.post(
-        "/chat", json=chat_data, headers={"Accept": "text/event-stream"}
-    ) as response:
-        # Check response headers - allow for charset in Content-Type
-        assert "text/event-stream" in response.headers["Content-Type"]
+    # Test chat endpoint
+    with patch("backend.server.get_or_create_conversation") as mock_get_conv:
+        # Configure the conversation chain mock
+        mock_chain = MagicMock()
+        mock_chain.llm = mock_llm.return_value
+        mock_chain.memory.buffer = "Previous conversation history"
+        mock_get_conv.return_value = mock_chain
 
-        # Read and verify streaming response
-        chunks = read_stream_response(response)
-
-        # Verify we got some chunks
-        assert len(chunks) > 0
-        # Combine chunks to verify complete response
-        full_response = "".join(chunks)
-        assert len(full_response) > 0
+        with client.post(
+            "/chat", json=chat_data, headers={"Accept": "text/event-stream"}
+        ) as response:
+            assert "text/event-stream" in response.headers["Content-Type"]
+            chunks = read_stream_response(response)
+            assert len(chunks) > 0
+            full_response = "".join(chunks)
+            assert len(full_response) > 0
 
 
 def test_streaming_error_handling(client):

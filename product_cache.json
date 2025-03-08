@@ -388,5 +388,154 @@
       }
     ],
     "last_updated": "2025-03-06T00:38:01.738217"
+  },
+  "philosophy": {
+    "product_url": "https://www.ewg.org/skindeep/products/9240818-Philosophy_Gentle_Detoxifying_Cleanser_With_Agave/",
+    "product_name": "Philosophy Gentle Detoxifying Cleanser With Agave",
+    "ingredients": [
+      {
+        "name": "WATER",
+        "score": "01"
+      },
+      {
+        "name": "STEARIC ACID",
+        "score": "01"
+      },
+      {
+        "name": "GLYCERIN",
+        "score": "01"
+      },
+      {
+        "name": "MYRISTIC ACID",
+        "score": "01"
+      },
+      {
+        "name": "POTASSIUM HYDROXIDE",
+        "score": "02"
+      },
+      {
+        "name": "LAURIC ACID",
+        "score": "01"
+      },
+      {
+        "name": "POTASSIUM COCOYL GLYCINATE",
+        "score": "01"
+      },
+      {
+        "name": "1,2-HEXANEDIOL",
+        "score": "01"
+      },
+      {
+        "name": "CAPRYLYL GLYCOL",
+        "score": "01"
+      },
+      {
+        "name": "COCAMIDOPROPYL BETAINE",
+        "score": "02"
+      },
+      {
+        "name": "GLYCERYL MONOSTEARATE",
+        "score": "01"
+      },
+      {
+        "name": "HYDROXYPROPYL METHYLCELLULOSE STEAROXY ETHER",
+        "score": "01"
+      },
+      {
+        "name": "SIMMONDSIA CHINENSIS (JOJOBA) SEED OIL",
+        "score": "01"
+      },
+      {
+        "name": "SODIUM PCA",
+        "score": "01"
+      },
+      {
+        "name": "SODIUM CHLORIDE",
+        "score": "01"
+      },
+      {
+        "name": "ADANSONIA DIGITATA SEED OIL",
+        "score": "01"
+      },
+      {
+        "name": "CITRULLUS LANATUS SEED OIL",
+        "score": "01"
+      },
+      {
+        "name": "GLYCERYL CAPRYLATE",
+        "score": "01"
+      },
+      {
+        "name": "GLYCERYL UNDECYLENATE",
+        "score": "01"
+      }
+    ],
+    "last_updated": "2025-03-06T22:43:27.790814"
+  },
+  "ordinary": {
+    "product_url": "https://www.ewg.org/skindeep/products/802710-The_Ordinary_Direct_Acids_Alpha_Lipoic_Acid_5_2018_formulation/",
+    "product_name": "The Ordinary Direct Acids Alpha Lipoic Acid 5% (2018 formulation)",
+    "ingredients": [
+      {
+        "name": "PROPANEDIOL",
+        "score": "02"
+      },
+      {
+        "name": "THIOCTIC ACID",
+        "score": "03"
+      }
+    ],
+    "last_updated": "2025-03-06T22:45:45.104930"
+  },
+  "Kiehl's": {
+    "product_url": "https://www.ewg.org/skindeep/products/2023103-Kiehls_Avocado_Nourishing_Hydration_Mask_34_Ounces/",
+    "product_name": "Kiehl's Avocado Nourishing Hydration Mask 3.4 Ounces",
+    "ingredients": [
+      {
+        "name": "ALCOHOL DENATURED",
+        "score": "01"
+      },
+      {
+        "name": "FRAGRANCE",
+        "score": "08"
+      },
+      {
+        "name": "WATER",
+        "score": "01"
+      },
+      {
+        "name": "LIMONENE",
+        "score": "04"
+      },
+      {
+        "name": "LINALOOL",
+        "score": "03"
+      },
+      {
+        "name": "CITRAL",
+        "score": "03"
+      },
+      {
+        "name": "CITRONELLOL",
+        "score": "03"
+      },
+      {
+        "name": "GERANIOL",
+        "score": "03"
+      },
+      {
+        "name": "COUMARIN",
+        "score": "04"
+      },
+      {
+        "name": "BENZYL BENZOATE",
+        "score": "04"
+      },
+      {
+        "name": "ALPHA-ISOMETHYL IONONE",
+        "score": "03"
+      }
+    ],
+    "last_updated": "2025-03-06T22:56:54.595101"
   }
 }

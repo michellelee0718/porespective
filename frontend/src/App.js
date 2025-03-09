@@ -14,6 +14,8 @@ import ThemeToggle from "./components/ThemeToggle";
 import { scheduleNotifications } from "./components/Notification";
 import { initDailyCheckIn } from "./firebase/routineService";
 import "./components/RoutineCheckIn.css";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "./firebase-config";
 
 function AppContent() {
   const { isDarkMode } = useTheme();
@@ -24,17 +26,42 @@ function AppContent() {
     if (user) {
       setIsAuth(true);
 
-      // Initialize today's check-in status
-      initDailyCheckIn();
+      const ensureUserDocument = async () => {
+        const userRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(userRef);
 
-      // Schedule notifications
-      scheduleNotifications();
+        if (!docSnap.exists()) {
+          const userData = {
+            fullName: user.displayName || "",
+            email: user.email || "",
+            createdAt: new Date(),
+            skincareRoutine: { am: "", pm: "" },
+          };
+
+          await setDoc(userRef, userData);
+        }
+
+        // Initialize today's check-in status
+        initDailyCheckIn();
+
+        // Schedule notifications
+        scheduleNotifications();
+      };
+
+      ensureUserDocument();
     }
   }, [user]);
 
   const signUserOut = () => {
     signOut(auth).then(() => {
+      const themeMode = localStorage.getItem("themeMode");
+      const autoMode = localStorage.getItem("autoMode");
+
       localStorage.clear();
+
+      if (themeMode) localStorage.setItem("themeMode", themeMode);
+      if (autoMode) localStorage.setItem("autoMode", autoMode);
+
       setIsAuth(false);
       window.location.pathname = "/login";
     });

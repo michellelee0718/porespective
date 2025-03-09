@@ -204,6 +204,24 @@ def recommend_product():
     if not user_profile:
         return jsonify({"error": "Missing user profile"}), 400
 
+    for i in ingredients:
+        if "name" not in i:
+            return jsonify({"error": "Ingredient missing 'name' field"}), 400
+        if "score" not in i:
+            return (
+                jsonify({"error": f"Ingredient '{i['name']}' missing 'score' field"}),
+                400,
+            )
+        if "concerns" not in i or not isinstance(i["concerns"], list):
+            return (
+                jsonify(
+                    {
+                        "error": f"Ingredient '{i['name']}' missing 'concerns' field or the 'concern' field is not a list"
+                    }
+                ),
+                400,
+            )
+
     # If client didn't provide a session_id, generate one automatically
     if not session_id:
         session_id = generate_session_id()
@@ -215,9 +233,12 @@ def recommend_product():
         f"- Allergies: {user_profile.get('allergies', 'None')}\n"
     )
 
-    # Format the ingredients for the LLM
+    # Format the ingredients for the LLM with error handling
     ingredient_details = "\n".join(
-        [f"{i['name']} (Hazard Score: {i['score']})" for i in ingredients]
+        [
+            f"{i['name']} (Hazard Score: {i['score']})\n  - Concerns: {', '.join(i['concerns']) if i['concerns'] else 'None'}"
+            for i in ingredients
+        ]
     )
 
     # Explain hazard ratings to the LLM
@@ -225,7 +246,7 @@ def recommend_product():
         "The hazard score represents the potential risk level of the ingredient. "
         "A lower score (1-2) means it's considered low risk, 3-6 indicates moderate risk, "
         "and 7-10 suggests a higher hazard potential. "
-        "Please analyze the safety of the product based on these scores. "
+        "Please analyze the safety of the product based on these scores along with the concerns for the ingredients. "
         "In addition, use user's skin type, skin concerns, and allergies while making recommendations."
     )
 

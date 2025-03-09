@@ -5,6 +5,7 @@ export const ThemeContext = createContext();
 export const ThemeProvider = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isAutoMode, setIsAutoMode] = useState(true);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   const checkTime = () => {
     const hours = new Date().getHours();
@@ -16,21 +17,29 @@ export const ThemeProvider = ({ children }) => {
     const savedMode = localStorage.getItem("themeMode");
     const savedAutoMode = localStorage.getItem("autoMode");
 
-    if (savedMode) {
-      setIsDarkMode(savedMode === "dark");
-    }
     if (savedAutoMode) {
       setIsAutoMode(savedAutoMode === "true");
     }
-  }, []);
 
-  useEffect(() => {
-    // switch to dark mode if auto mode is enabled and time is night
-    if (isAutoMode) {
+    if (savedMode) {
+      setIsDarkMode(savedMode === "dark");
+    } else if (savedAutoMode === "true" || savedAutoMode === null) {
       const isDark = checkTime();
       setIsDarkMode(isDark);
     }
-  }, [isAutoMode]);
+
+    setInitialLoadComplete(true);
+  }, []);
+
+  useEffect(() => {
+    if (!initialLoadComplete) return;
+
+    if (isAutoMode) {
+      const isDark = checkTime();
+      setIsDarkMode(isDark);
+      localStorage.setItem("themeMode", isDark ? "dark" : "light");
+    }
+  }, [isAutoMode, initialLoadComplete]);
 
   const toggleTheme = () => {
     // toggle theme

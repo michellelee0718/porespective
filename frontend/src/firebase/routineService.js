@@ -1,4 +1,4 @@
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "../firebase-config";
 
 // Check if user is logged in and return their uid or null
@@ -7,12 +7,13 @@ const getCurrentUserId = () => {
 };
 
 // Get the current date in the format YYYY-MM-DD
-const getTodayDateString = () => {
-  const date = new Date();
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-    2,
-    "0",
-  )}-${String(date.getDate()).padStart(2, "0")}`;
+export const getTodayDateString = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 };
 
 // Initialize or reset daily check-in status
@@ -23,7 +24,22 @@ export const initDailyCheckIn = async () => {
   const userRef = doc(db, "users", userId);
   const docSnap = await getDoc(userRef);
 
-  if (!docSnap.exists()) return null;
+  if (!docSnap.exists()) {
+    const newUserData = {
+      fullName: auth.currentUser?.displayName || "",
+      email: auth.currentUser?.email || "",
+      createdAt: new Date(),
+      skincareRoutine: { am: "", pm: "" },
+      routineCheckIn: {
+        lastResetDate: getTodayDateString(),
+        amCompleted: false,
+        pmCompleted: false,
+      },
+    };
+
+    await setDoc(userRef, newUserData);
+    return newUserData.routineCheckIn;
+  }
 
   const userData = docSnap.data();
   const today = getTodayDateString();

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../App.css";
 
-
 const Search = () => {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
@@ -53,7 +52,8 @@ const Search = () => {
     <div>
       <form onSubmit={handleSearch}>
         <div className="search-input">
-          <input className="search-bar"
+          <input
+            className="search-bar"
             type="text"
             placeholder="Enter product name"
             value={query}

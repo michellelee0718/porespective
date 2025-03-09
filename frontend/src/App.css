@@ -48,7 +48,6 @@
   box-sizing: border-box;
 }
 
-
 body {
   background-color: #fff5ee;
   background-image: linear-gradient(90deg, #ae7e7e, #ffeff6);
@@ -144,7 +143,6 @@ form input {
 .user a {
   margin-left: 8px;
 }
-
 
 .user-menu {
   display: flex;
@@ -453,8 +451,8 @@ textarea {
 
 .button-container {
   display: flex;
-  justify-content: center;  
-  align-items: center;     
+  justify-content: center;
+  align-items: center;
 }
 
 .profile-edit-button {

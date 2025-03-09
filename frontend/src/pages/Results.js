@@ -12,13 +12,49 @@ const Results = () => {
     productUrl: "#",
   }
 
-  const [recommendation, setRecommendation] = useState("")
-  const [sessionId, setSessionId] = useState(null)
-  const [isChatOpen, setIsChatOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [userMessage, setUserMessage] = useState("")
-  const [messages, setMessages] = useState([])
-  const [expandedConcerns, setExpandedConcerns] = useState({})
+  const [recommendation, setRecommendation] = useState("");
+  const [sessionId, setSessionId] = useState(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userMessage, setUserMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [expandedConcerns, setExpandedConcerns] = useState({});
+  const [ingredientSummary, setIngredientSummary] = useState([]); // Store as an array
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false); // Loading state for summary
+
+  const fetchIngredientSummary = async () => {
+    const cacheKey = JSON.stringify(ingredients); // Unique key based on ingredients
+
+    // Check local storage cache
+    const cachedSummary = localStorage.getItem(cacheKey);
+    if (cachedSummary) {
+      setIngredientSummary(JSON.parse(cachedSummary));
+      return;
+    }
+
+    setIsSummaryLoading(true);
+    try {
+      const response = await fetch("http://127.0.0.1:5000/ingredient-summary", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ingredients }),
+      });
+
+      const data = await response.json();
+      if (Array.isArray(data.summary)) {
+        setIngredientSummary(data.summary);
+        localStorage.setItem(cacheKey, JSON.stringify(data.summary)); // Cache it
+      } else {
+        setIngredientSummary([]);
+      }
+    } catch (error) {
+      console.error("Error fetching ingredient summary:", error);
+      setIngredientSummary([]);
+    }
+    setIsSummaryLoading(false);
+  };
 
   const fetchRecommendation = async () => {
     console.log("Fetching user profile...")
@@ -310,6 +346,28 @@ const Results = () => {
           </li>
         ))}
       </ul>
+
+      <button className="summary-button" onClick={fetchIngredientSummary}>
+        Get Ingredient Summary
+      </button>
+
+      {/* AI Summary Section */}
+      {isSummaryLoading ? (
+        <p>Loading AI Summary of Key Words...</p>
+      ) : (
+        ingredientSummary.length > 0 && (
+          <div className="ingredient-summary">
+            <h2>Key Words</h2>
+            <ul className="summary-list">
+              {ingredientSummary.map((word, index) => (
+                <li key={index} className="summary-item">
+                  {word}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      )}
 
       <button className="ask-ai-button" onClick={handleAskAI}>
         Ask AI for Recommendation

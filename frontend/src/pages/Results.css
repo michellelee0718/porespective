@@ -356,3 +356,44 @@
 .toggle-concerns:hover {
   text-decoration: underline;
 }
+
+.ingredient-summary {
+  margin-top: 20px;
+  padding: 10px;
+  background: #c9b9e2;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.summary-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.summary-item {
+  background: #d1e7fd;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #0056b3;
+}
+
+.summary-button {
+  background-color: #7d3c98;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.6rem 1.2rem;
+  margin: 0.5rem 0;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.summary-button:hover {
+  background-color: #5a6268;
+}

@@ -262,7 +262,160 @@ describe("Streaming functionality", () => {
     await waitFor(() => {
       expect(
         screen.getByText("Failed to fetch recommendation."),
-      ).toBeInTheDocument()
-    })
-  })
-})
+      ).toBeInTheDocument();
+    });
+  });
+});
+describe("fetchIngredientSummary function", () => {
+  beforeEach(() => {
+    fetch.mockClear();
+    localStorage.clear();
+  });
+
+  it("fetches ingredient summary successfully and updates state", async () => {
+    const mockSummary = ["Hydrating", "Anti-inflammatory", "Brightening"];
+
+    fetch.mockResolvedValueOnce({
+      json: jest.fn().mockResolvedValue({ summary: mockSummary }),
+    });
+
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <Results />
+        </BrowserRouter>,
+      );
+    });
+
+    const summaryButton = screen.getByText("Get Ingredient Summary");
+    await act(async () => {
+      fireEvent.click(summaryButton);
+    });
+
+    await waitFor(() => {
+      mockSummary.forEach((word) => {
+        expect(screen.getByText(word)).toBeInTheDocument();
+      });
+    });
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses cached ingredient summary from localStorage if available", async () => {
+    const cachedSummary = ["Antioxidant", "Exfoliating"];
+    localStorage.setItem(JSON.stringify([]), JSON.stringify(cachedSummary));
+
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <Results />
+        </BrowserRouter>,
+      );
+    });
+
+    const summaryButton = screen.getByText("Get Ingredient Summary");
+    await act(async () => {
+      fireEvent.click(summaryButton);
+    });
+
+    await waitFor(() => {
+      cachedSummary.forEach((word) => {
+        expect(screen.getByText(word)).toBeInTheDocument();
+      });
+    });
+
+    expect(fetch).not.toHaveBeenCalled(); // Should not fetch when using cache
+  });
+
+  it("handles API errors gracefully", async () => {
+    fetch.mockRejectedValueOnce(new Error("Network error"));
+
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <Results />
+        </BrowserRouter>,
+      );
+    });
+
+    const summaryButton = screen.getByText("Get Ingredient Summary");
+    await act(async () => {
+      fireEvent.click(summaryButton);
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText("Loading AI Summary of Key Words..."),
+      ).not.toBeInTheDocument();
+    });
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("Key Words")).not.toBeInTheDocument(); // Should not display summary
+  });
+
+  it("sets loading state correctly", async () => {
+    fetch.mockResolvedValueOnce({
+      json: jest.fn().mockResolvedValue({ summary: ["Soothing"] }),
+    });
+
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <Results />
+        </BrowserRouter>,
+      );
+    });
+
+    const summaryButton = screen.getByText("Get Ingredient Summary");
+    act(() => {
+      fireEvent.click(summaryButton);
+    });
+
+    expect(
+      screen.getByText("Loading AI Summary of Key Words..."),
+    ).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText("Loading AI Summary of Key Words..."),
+      ).not.toBeInTheDocument();
+      expect(screen.getByText("Soothing")).toBeInTheDocument();
+    });
+  });
+
+  it("fetches and updates UI correctly after multiple clicks", async () => {
+    fetch.mockResolvedValueOnce({
+      json: jest.fn().mockResolvedValue({ summary: ["Moisturizing"] }),
+    });
+
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <Results />
+        </BrowserRouter>,
+      );
+    });
+
+    const summaryButton = screen.getByText("Get Ingredient Summary");
+
+    await act(async () => {
+      fireEvent.click(summaryButton);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Moisturizing")).toBeInTheDocument();
+    });
+
+    fetch.mockResolvedValueOnce({
+      json: jest.fn().mockResolvedValue({ summary: ["Moisturizing"] }),
+    });
+
+    await act(async () => {
+      fireEvent.click(summaryButton);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Moisturizing")).toBeInTheDocument();
+    });
+  });
+});

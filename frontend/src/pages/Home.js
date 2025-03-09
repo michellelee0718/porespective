@@ -15,6 +15,7 @@ function Home() {
 
       <div className="search-bar">
         <Form
+          className="search"
           placeHolder="Search for a product"
           isSearching={event => setSearchKeyword(event.target.value)}
         />

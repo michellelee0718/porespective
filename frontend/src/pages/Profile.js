@@ -165,6 +165,15 @@ const Profile = () => {
         },
       };
 
+      const regex = /^(1[0-2]|0?[1-9]):[0-5][0-9] (AM|PM)$/;
+      if (
+        !regex.test(formattedData.skincareRoutine.am) ||
+        !regex.test(formattedData.skincareRoutine.pm)
+      ) {
+        alert("Please input a valid time in HH/MM format");
+        return;
+      }
+
       await updateDoc(userRef, formattedData);
 
       setUserData({

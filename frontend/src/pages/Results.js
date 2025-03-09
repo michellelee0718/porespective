@@ -19,8 +19,22 @@ const Results = () => {
   const [userMessage, setUserMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [expandedConcerns, setExpandedConcerns] = useState({});
-  const [ingredientSummary, setIngredientSummary] = useState([]); // Store as an array
-  const [isSummaryLoading, setIsSummaryLoading] = useState(false); // Loading state for summary
+  const [ingredientSummary, setIngredientSummary] = useState([]);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+
+  // Toggle expand/collapse state
+  const toggleConcerns = (index) => {
+    setExpandedConcerns((prevState) => ({
+      ...prevState,
+      [index]: !prevState[index],
+    }));
+  };
+
+  // Determine if a component is high risk
+  const isHighRisk = (score) => {
+    const numScore = parseInt(score, 10);
+    return numScore >= 7;
+  };
 
   const fetchIngredientSummary = async () => {
     const cacheKey = JSON.stringify(ingredients); // Unique key based on ingredients
@@ -311,41 +325,63 @@ const Results = () => {
       </h1>
 
       <h2 className="ingredient-title">Ingredient List</h2>
-      <ul className="ingredient-list">
+      <div className="ingredient-list">
         {ingredients.map((item, index) => (
-          <li key={index} className={`ingredient-item score-${item.score}`}>
+          <div
+            key={index}
+            className={`ingredient-item ${
+              isHighRisk(item.score) ? "high-risk" : ""
+            }`}
+          >
             <div className="ingredient-header">
-              {item.name} - <strong>Score: {parseInt(item.score, 10)}</strong>
+              <div className="ingredient-info">
+                <span>{item.name}</span>
+                <span
+                  className={`score-indicator score-${parseInt(
+                    item.score,
+                    10,
+                  )}`}
+                >
+                  Score: {parseInt(item.score, 10)}
+                </span>
+              </div>
+
               {item.concerns && item.concerns.length > 0 && (
                 <button
-                  className="toggle-concerns"
-                  onClick={() =>
-                    setExpandedConcerns((prevState) => ({
-                      ...prevState,
-                      [index]: !prevState[index],
-                    }))
-                  }
+                  className={`accordion-btn ${
+                    expandedConcerns[index] ? "active" : ""
+                  }`}
+                  onClick={() => toggleConcerns(index)}
                 >
-                  {expandedConcerns[index]
-                    ? "▼ Hide Concerns"
-                    : "▶ Show Concerns"}
+                  <span>
+                    {expandedConcerns[index]
+                      ? "Hide Concerns"
+                      : "Show Concerns"}
+                  </span>
+                  <span className="accordion-icon">▶</span>
                 </button>
               )}
             </div>
 
-            {/* Conditionally show concerns when expanded */}
-            {expandedConcerns[index] && item.concerns.length > 0 && (
-              <ul className="concerns-list">
-                {item.concerns.map((concern, idx) => (
-                  <li key={idx} className="concern-item">
-                    {concern}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
+            {/* Expandable concerns panel */}
+            <div
+              className={`concerns-panel ${
+                expandedConcerns[index] ? "expanded" : ""
+              }`}
+            >
+              {item.concerns && item.concerns.length > 0 && (
+                <ul className="concerns-list">
+                  {item.concerns.map((concern, idx) => (
+                    <li key={idx} className="concern-item">
+                      {concern}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
 
       <button className="summary-button" onClick={fetchIngredientSummary}>
         Get Ingredient Summary

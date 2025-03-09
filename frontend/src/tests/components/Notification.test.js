@@ -32,7 +32,7 @@ describe("Notification Service", () => {
       exists: jest.fn().mockReturnValue(true),
       data: jest.fn().mockReturnValue({
         email: "testuser@example.com",
-        skincareRoutine: { am: "8:00", pm: "10:00" },
+        skincareRoutine: { am: "08:00", pm: "10:00" },
         routineCheckIn: { amCompleted: false, pmCompleted: false },
         amNotification: false,
         pmNotification: false,

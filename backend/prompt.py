@@ -9,6 +9,7 @@ prompt_template_recommendation = PromptTemplate(
         "Should the user use this product? Provide a concise explanation within 80 words."
         "Provide your response in text format without any special formatting, headers, or bullet points."
         "Always refer to the user as 'you' and avoid using 'the user'. "
+        "If the user profile doesn't have anything specified, you should also tell them to fill in their profile information. "
     ),
 )
 
@@ -24,8 +25,6 @@ prompt_template_followup = PromptTemplate(
         "Always refer to the user as 'you' and avoid using 'the user'. "
     ),
 )
-
-from langchain.prompts import PromptTemplate
 
 prompt_template_ingredient_summary = PromptTemplate(
     input_variables=["ingredients"],

@@ -42,21 +42,36 @@
 
 /* Ingredient List */
 .ingredient-list {
-  background-color: white;
+  max-width: 800px;
+  margin: 0 auto;
   padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  width: 33%;
-  margin-top: 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: white;
 }
 
 /* Each Ingredient Item */
 .ingredient-item {
+  padding: 16px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ingredient Header */
+.ingredient-header {
   display: flex;
   justify-content: space-between;
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-  font-size: 1.2rem;
+  align-items: center;
+  width: 100%;
+}
+
+/* Ingredient Name and Score Area */
+.ingredient-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 /* Highlight high-hazard scores */
@@ -278,9 +293,9 @@
 
 /* Dark mode overrides for Results page */
 .dark-mode .ingredient-list {
-  background-color: #333;
-  color: #eee;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  background-color: #2a2a2a;
+  color: #ffffff;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
 }
 
 .dark-mode .recommendation-box,
@@ -330,7 +345,96 @@
 }
 
 .dark-mode .ingredient-item {
-  border-color: #555;
+  border-color: #444;
+}
+
+.dark-mode .ingredient-info span:first-child {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.dark-mode .score-1 {
+  background-color: rgba(46, 125, 50, 0.3);
+  color: #81c784;
+  border: 1px solid #81c784;
+}
+
+.dark-mode .score-2,
+.dark-mode .score-3 {
+  background-color: rgba(255, 143, 0, 0.3);
+  color: #ffb74d;
+  border: 1px solid #ffb74d;
+}
+
+.dark-mode .score-4,
+.dark-mode .score-5,
+.dark-mode .score-6 {
+  background-color: rgba(198, 40, 40, 0.3);
+  color: #e57373;
+  border: 1px solid #e57373;
+}
+
+.dark-mode .score-7,
+.dark-mode .score-8,
+.dark-mode .score-9,
+.dark-mode .score-10 {
+  background-color: rgba(183, 28, 28, 0.3);
+  color: #ef5350;
+  border: 1px solid #ef5350;
+}
+
+.dark-mode .accordion-btn {
+  background-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-mode .accordion-btn:hover {
+  background-color: #555;
+}
+
+.dark-mode .accordion-btn.active {
+  background-color: #0277bd;
+  color: #ffffff;
+}
+
+.dark-mode .concerns-panel {
+  background-color: #333;
+}
+
+.dark-mode .concerns-panel.expanded {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .concern-item {
+  color: #e0e0e0;
+}
+
+.dark-mode .concern-item:before {
+  color: #ff7043;
+}
+
+.dark-mode .high-risk {
+  background-color: rgba(183, 28, 28, 0.2);
+  border: 1px solid rgba(239, 83, 80, 0.3);
+}
+
+.dark-mode .summary-button {
+  background-color: #7e57c2;
+}
+
+.dark-mode .summary-button:hover {
+  background-color: #673ab7;
+}
+
+.dark-mode .ingredient-summary {
+  background-color: #424242;
+  color: #ffffff;
+}
+
+.dark-mode .summary-item {
+  background-color: #333;
+  color: #90caf9;
+  border: 1px solid #42a5f5;
 }
 
 .concerns-list {
@@ -396,4 +500,173 @@
 
 .summary-button:hover {
   background-color: #5a6268;
+}
+
+.show-concerns-btn {
+  background-color: transparent;
+  color: #0066cc;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.show-concerns-btn:hover {
+  background-color: rgba(0, 102, 204, 0.1);
+}
+
+.show-concerns-btn:before {
+  content: "▶";
+  margin-right: 6px;
+  font-size: 10px;
+  transition: transform 0.2s ease;
+}
+
+.show-concerns-btn.active:before {
+  transform: rotate(90deg);
+}
+
+.score-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 14px;
+  margin-left: 8px;
+}
+
+.score-1 {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.score-2,
+.score-3 {
+  background-color: #fff8e1;
+  color: #ff8f00;
+}
+
+.score-4,
+.score-5,
+.score-6 {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.score-7,
+.score-8,
+.score-9,
+.score-10 {
+  background-color: #ffcdd2;
+  color: #b71c1c;
+}
+
+.accordion-btn {
+  background-color: #f0f0f0;
+  color: #333;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.accordion-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.accordion-btn.active {
+  background-color: #e1f5fe;
+  color: #0277bd;
+}
+
+.accordion-icon {
+  font-size: 12px;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.accordion-btn.active .accordion-icon {
+  transform: rotate(90deg);
+}
+
+.concerns-panel {
+  overflow: hidden;
+  transition:
+    max-height 0.3s ease,
+    padding 0.3s ease,
+    margin 0.3s ease,
+    opacity 0.3s ease;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-top: 0;
+  opacity: 0;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.concerns-panel.expanded {
+  max-height: 500px;
+  padding: 12px;
+  margin-top: 10px;
+  opacity: 1;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.concerns-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.concern-item {
+  margin-bottom: 8px;
+  padding-left: 20px;
+  position: relative;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.concern-item:before {
+  content: "◦";
+  position: absolute;
+  left: 0;
+  color: #ff5722;
+}
+
+.high-risk {
+  background-color: rgba(255, 235, 238, 0.5);
+  border-radius: 8px;
+}
+
+.summary-button {
+  background-color: #6a4c93;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 20px auto;
+  display: block;
+  transition: background-color 0.3s ease;
+}
+
+.summary-button:hover {
+  background-color: #563d7c;
 }

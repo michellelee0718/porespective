@@ -13,8 +13,11 @@ const Profile = () => {
   const [user, loading] = useAuthState(auth);
   const [userData, setUserData] = useState(null);
   const [editing, setEditing] = useState(false);
-  const [routineStatus, setRoutineStatus] = useState({ amCompleted: false, pmCompleted: false });
-  
+  const [routineStatus, setRoutineStatus] = useState({
+    amCompleted: false,
+    pmCompleted: false,
+  });
+
   const [formData, setFormData] = useState({
     fullName: "",
     gender: "",
@@ -112,8 +115,11 @@ const Profile = () => {
 
   // Save data to Firestore
   const handleSave = async () => {
-    const regex = /^(1[0-2]|0?[1-9]):[0-5][0-9]$/
-    if (!regex.test(formData.skincareRoutine.am) || !regex.test(formData.skincareRoutine.pm)) {
+    const regex = /^(1[0-2]|0?[1-9]):[0-5][0-9]$/;
+    if (
+      !regex.test(formData.skincareRoutine.am) ||
+      !regex.test(formData.skincareRoutine.pm)
+    ) {
       alert("Please input a valid time in HH/MM format");
       return;
     }
@@ -355,20 +361,19 @@ const Profile = () => {
         </div>
       </div>
       <div className="button-container">
-      <button
-        className="profile-edit-button"
-        onClick={() => setEditing(!editing)}
-      >
-
-        {editing ? "Cancel" : "Edit"}
-      </button>
+        <button
+          className="profile-edit-button"
+          onClick={() => setEditing(!editing)}
+        >
+          {editing ? "Cancel" : "Edit"}
+        </button>
       </div>
       <div className="button-container">
-      {editing && (
-        <button className="profile-save-button" onClick={handleSave}>
-          Save
-        </button>
-      )}
+        {editing && (
+          <button className="profile-save-button" onClick={handleSave}>
+            Save
+          </button>
+        )}
       </div>
     </div>
   );

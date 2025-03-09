@@ -9,34 +9,40 @@ const getCurrentUserId = () => {
 // Get the current date in the format YYYY-MM-DD
 const getTodayDateString = () => {
   const date = new Date();
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+    2,
+    "0",
+  )}-${String(date.getDate()).padStart(2, "0")}`;
 };
 
 // Initialize or reset daily check-in status
 export const initDailyCheckIn = async () => {
   const userId = getCurrentUserId();
   if (!userId) return null;
-  
+
   const userRef = doc(db, "users", userId);
   const docSnap = await getDoc(userRef);
-  
+
   if (!docSnap.exists()) return null;
-  
+
   const userData = docSnap.data();
   const today = getTodayDateString();
-  
+
   // Check if we need to reset for a new day
-  if (!userData.routineCheckIn || userData.routineCheckIn.lastResetDate !== today) {
+  if (
+    !userData.routineCheckIn ||
+    userData.routineCheckIn.lastResetDate !== today
+  ) {
     const routineCheckIn = {
       lastResetDate: today,
       amCompleted: false,
-      pmCompleted: false
+      pmCompleted: false,
     };
-    
+
     await updateDoc(userRef, { routineCheckIn });
     return routineCheckIn;
   }
-  
+
   return userData.routineCheckIn;
 };
 
@@ -45,19 +51,19 @@ export const markRoutineCompleted = async (routineType) => {
   if (routineType !== "am" && routineType !== "pm") {
     throw new Error("Invalid routine type. Must be 'am' or 'pm'");
   }
-  
+
   const userId = getCurrentUserId();
   if (!userId) return null;
-  
+
   await initDailyCheckIn();
-  
+
   const userRef = doc(db, "users", userId);
   const updateField = routineType === "am" ? "amCompleted" : "pmCompleted";
-  
+
   await updateDoc(userRef, {
-    [`routineCheckIn.${updateField}`]: true
+    [`routineCheckIn.${updateField}`]: true,
   });
-  
+
   return true;
 };
 
@@ -65,7 +71,7 @@ export const markRoutineCompleted = async (routineType) => {
 export const getRoutineCheckInStatus = async () => {
   const userId = getCurrentUserId();
   if (!userId) return null;
-  
+
   const checkInStatus = await initDailyCheckIn();
   return checkInStatus;
-}; 
+};

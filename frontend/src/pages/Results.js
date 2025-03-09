@@ -1,10 +1,16 @@
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import "./Results.css";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase-config";
 
 const Results = () => {
   const location = useLocation();
-  const { productName, ingredients, productUrl } = location.state || { productName: "Unknown Product", ingredients: [], productUrl: "#" };
+  const { productName, ingredients, productUrl } = location.state || {
+    productName: "Unknown Product",
+    ingredients: [],
+    productUrl: "#",
+  };
 
   const [recommendation, setRecommendation] = useState("");
   const [sessionId, setSessionId] = useState(null);
@@ -12,26 +18,51 @@ const Results = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [userMessage, setUserMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const [expandedConcerns, setExpandedConcerns] = useState({});
 
   const fetchRecommendation = async () => {
+    console.log("Fetching user profile...");
+    let userProfile = {};
+
+    if (auth.currentUser) {
+      try {
+        const userRef = doc(db, "users", auth.currentUser.uid);
+        const docSnap = await getDoc(userRef);
+
+        if (docSnap.exists()) {
+          userProfile = docSnap.data();
+          console.log("Retrieved user profile from Firestore:", userProfile);
+        } else {
+          console.warn("User profile not found in Firestore.");
+        }
+      } catch (error) {
+        console.error("Error fetching user profile from Firestore:", error);
+      }
+    } else {
+      console.warn("No authenticated user found.");
+    }
+
+    console.log("Final User Profile sent to backend:", userProfile);
+
     console.log("Fetching recommendation...");
     setIsLoading(true);
     try {
       const response = await fetch("http://127.0.0.1:5000/recommend", {
         method: "POST",
-        credentials: 'include',
-        headers: { 
+        credentials: "include",
+        headers: {
           "Content-Type": "application/json",
-          "Accept": "text/event-stream",
+          Accept: "text/event-stream",
         },
         body: JSON.stringify({
           product_name: productName,
-          ingredients: ingredients
-        })
+          ingredients: ingredients,
+          user_profile: userProfile,
+        }),
       });
 
-      const receivedSessionId = response.headers.get('X-Session-Id');
-      
+      const receivedSessionId = response.headers.get("X-Session-Id");
+
       // Set the session ID immediately when we receive it
       if (receivedSessionId) {
         setSessionId(receivedSessionId);
@@ -42,32 +73,32 @@ const Results = () => {
       let fullResponse = "";
 
       // Add initial AI message
-      setMessages(prevMessages => [
+      setMessages((prevMessages) => [
         ...prevMessages,
-        { type: 'ai', content: '', isStreaming: true }
+        { type: "ai", content: "", isStreaming: true },
       ]);
 
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        
+
         const text = decoder.decode(value);
-        
-        const lines = text.split('\n');
-        
+
+        const lines = text.split("\n");
+
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
+          if (line.startsWith("data: ")) {
             try {
               const data = JSON.parse(line.slice(6));
               if (data.content) {
                 fullResponse += data.content;
-                
-                setMessages(prevMessages => {
+
+                setMessages((prevMessages) => {
                   const lastMessage = prevMessages[prevMessages.length - 1];
                   if (lastMessage && lastMessage.isStreaming) {
                     return [
                       ...prevMessages.slice(0, -1),
-                      { ...lastMessage, content: fullResponse }
+                      { ...lastMessage, content: fullResponse },
                     ];
                   }
                   return prevMessages;
@@ -82,12 +113,12 @@ const Results = () => {
       }
 
       // Final update to remove streaming flag
-      setMessages(prevMessages => {
+      setMessages((prevMessages) => {
         const lastMessage = prevMessages[prevMessages.length - 1];
         if (lastMessage && lastMessage.isStreaming) {
           return [
             ...prevMessages.slice(0, -1),
-            { ...lastMessage, content: fullResponse, isStreaming: false }
+            { ...lastMessage, content: fullResponse, isStreaming: false },
           ];
         }
         return prevMessages;
@@ -97,9 +128,9 @@ const Results = () => {
       setSessionId(receivedSessionId);
     } catch (error) {
       console.error("Error:", error);
-      setMessages(prevMessages => [
+      setMessages((prevMessages) => [
         ...prevMessages,
-        { type: 'ai', content: "Failed to fetch recommendation." }
+        { type: "ai", content: "Failed to fetch recommendation." },
       ]);
     }
     setIsLoading(false);
@@ -107,17 +138,20 @@ const Results = () => {
 
   const handleAskAI = async () => {
     setIsChatOpen(true);
-    setMessages(prevMessages => [
+    setMessages((prevMessages) => [
       ...prevMessages,
-      { type: 'ai', content: `Hello! I'd be happy to analyze ${productName} for you.` }
+      {
+        type: "ai",
+        content: `Hello! I'd be happy to analyze ${productName} for you.`,
+      },
     ]);
-    
+
     if (!recommendation) {
       await fetchRecommendation();
     } else {
-      setMessages(prevMessages => [
+      setMessages((prevMessages) => [
         ...prevMessages,
-        { type: 'ai', content: recommendation }
+        { type: "ai", content: recommendation },
       ]);
     }
   };
@@ -127,94 +161,96 @@ const Results = () => {
     e.preventDefault();
     if (!userMessage.trim()) return;
 
-
     // Add user message to chat
-    setMessages(prevMessages => [...prevMessages, { type: 'user', content: userMessage }]);
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { type: "user", content: userMessage },
+    ]);
     const currentMessage = userMessage;
     setUserMessage("");
     setIsLoading(true);
 
     try {
-        if (!sessionId) {
-            console.log("No session ID found!");
-            setMessages((prev) => [
-                ...prev,
-                {
-                    type: "ai",
-                    content: "No session found. Please click 'Ask AI for Recommendation' first.",
-                },
-            ]);
-            setIsLoading(false);
-            return;
-        }
-
-        const response = await fetch("http://127.0.0.1:5000/chat", {
-            method: "POST",
-            credentials: 'include',
-            headers: { 
-                "Content-Type": "application/json",
-                "Accept": "text/event-stream",
-            },
-            body: JSON.stringify({
-                session_id: sessionId,
-                message: currentMessage,
-            }),
-        });
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let fullResponse = "";
-
-        // Add initial AI message
-        setMessages(prevMessages => [
-            ...prevMessages,
-            { type: 'ai', content: '', isStreaming: true }
+      if (!sessionId) {
+        console.log("No session ID found!");
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: "ai",
+            content:
+              "No session found. Please click 'Ask AI for Recommendation' first.",
+          },
         ]);
+        setIsLoading(false);
+        return;
+      }
 
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-            
-            const text = decoder.decode(value);
-            const lines = text.split('\n');
-            
-            for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                    try {
-                        const data = JSON.parse(line.slice(6));
-                        if (data.content) {
-                            fullResponse += data.content;
-                            
-                            setMessages(prevMessages => {
-                                const lastMessage = prevMessages[prevMessages.length - 1];
-                                if (lastMessage && lastMessage.isStreaming) {
-                                    return [
-                                        ...prevMessages.slice(0, -1),
-                                        { ...lastMessage, content: fullResponse }
-                                    ];
-                                }
-                                return prevMessages;
-                            });
-                        }
-                    } catch (e) {
-                        console.error("Error parsing SSE data:", e);
-                    }
-                }
+      const response = await fetch("http://127.0.0.1:5000/chat", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          message: currentMessage,
+        }),
+      });
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullResponse = "";
+
+      // Add initial AI message
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { type: "ai", content: "", isStreaming: true },
+      ]);
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const text = decoder.decode(value);
+        const lines = text.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.content) {
+                fullResponse += data.content;
+
+                setMessages((prevMessages) => {
+                  const lastMessage = prevMessages[prevMessages.length - 1];
+                  if (lastMessage && lastMessage.isStreaming) {
+                    return [
+                      ...prevMessages.slice(0, -1),
+                      { ...lastMessage, content: fullResponse },
+                    ];
+                  }
+                  return prevMessages;
+                });
+              }
+            } catch (e) {
+              console.error("Error parsing SSE data:", e);
             }
+          }
         }
+      }
 
-        // Final update to remove streaming flag
-        setMessages(prevMessages => {
-            const lastMessage = prevMessages[prevMessages.length - 1];
-            if (lastMessage && lastMessage.isStreaming) {
-                return [
-                    ...prevMessages.slice(0, -1),
-                    { ...lastMessage, content: fullResponse, isStreaming: false }
-                ];
-            }
-            return prevMessages;
-        });
-
+      // Final update to remove streaming flag
+      setMessages((prevMessages) => {
+        const lastMessage = prevMessages[prevMessages.length - 1];
+        if (lastMessage && lastMessage.isStreaming) {
+          return [
+            ...prevMessages.slice(0, -1),
+            { ...lastMessage, content: fullResponse, isStreaming: false },
+          ];
+        }
+        return prevMessages;
+      });
     } catch (error) {
       console.error("Error during chat request:", error);
       setMessages((prev) => [
@@ -223,7 +259,7 @@ const Results = () => {
       ]);
     }
     setIsLoading(false);
-};
+  };
 
   const handleCloseChat = () => {
     setIsChatOpen(false);
@@ -242,15 +278,40 @@ const Results = () => {
       <ul className="ingredient-list">
         {ingredients.map((item, index) => (
           <li key={index} className={`ingredient-item score-${item.score}`}>
-            {item.name} - <strong>Score: {parseInt(item.score, 10)}</strong>
+            <div className="ingredient-header">
+              {item.name} - <strong>Score: {parseInt(item.score, 10)}</strong>
+              {item.concerns && item.concerns.length > 0 && (
+                <button
+                  className="toggle-concerns"
+                  onClick={() =>
+                    setExpandedConcerns((prevState) => ({
+                      ...prevState,
+                      [index]: !prevState[index],
+                    }))
+                  }
+                >
+                  {expandedConcerns[index]
+                    ? "▼ Hide Concerns"
+                    : "▶ Show Concerns"}
+                </button>
+              )}
+            </div>
+
+            {/* Conditionally show concerns when expanded */}
+            {expandedConcerns[index] && item.concerns.length > 0 && (
+              <ul className="concerns-list">
+                {item.concerns.map((concern, idx) => (
+                  <li key={idx} className="concern-item">
+                    {concern}
+                  </li>
+                ))}
+              </ul>
+            )}
           </li>
         ))}
       </ul>
 
-      <button 
-        className="ask-ai-button" 
-        onClick={handleAskAI}
-      >
+      <button className="ask-ai-button" onClick={handleAskAI}>
         Ask AI for Recommendation
       </button>
 
@@ -265,12 +326,10 @@ const Results = () => {
           <div className="chat-messages">
             {messages.map((message, index) => (
               <div key={index} className={`message ${message.type}-message`}>
-                 <div className="message-avatar">
-                  {message.type === 'ai' ? 'AI' : 'You'}
+                <div className="message-avatar">
+                  {message.type === "ai" ? "AI" : "You"}
                 </div>
-                <div className="message-content">
-                  {message.content}
-                </div>
+                <div className="message-content">{message.content}</div>
               </div>
             ))}
           </div>

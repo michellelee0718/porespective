@@ -1,7 +1,7 @@
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../firebase-config";
 
-const showNotification = (message) => {
+export const showNotification = (message) => {
   if (Notification.permission === "granted") {
     new Notification("Skincare Reminder", {
       body: message,
@@ -9,7 +9,7 @@ const showNotification = (message) => {
   }
 };
 
-const sendEmail = async () => {
+export const sendEmail = async () => {
   if (!auth.currentUser) return;
   const userRef = doc(db, "users", auth.currentUser.uid);
   const docSnap = await getDoc(userRef);
@@ -74,29 +74,29 @@ export const scheduleNotifications = async () => {
     let pmNotification = userData.pmNotification;
 
     if (!am && !pm && !amCompleted && !pmCompleted) return;
-    
+    console.log("here")
     const now = new Date();
-    
+    console.log("here")
     let hours = now.getHours();
 
 
     if (hours > 12) { 
         hours = hours - 12; 
-        console.log("ENTER");
         const pmTime = hours.toString() + ":" + now.getMinutes().toString().padStart(2, '0');
         if (pmTime === pm && !pmCompleted && !pmNotification) {
 
           await updateDoc(userRef, {
             [`pmNotification`]: true
           });
-          console.log("ENTER");
           await sendEmail();
           showNotification("Time for your night skincare routine!");
           
           } 
     } else {
         const amTime = now.getHours().toString() + ":" + now.getMinutes().toString().padStart(2, '0');
+        console.log("here pls",now, now.getHours())
         if (amTime === am && !amCompleted && !amNotification) {
+          console.log("inside")
            showNotification("Time for your morning skincare routine!");
            await updateDoc(userRef, {
             [`amNotification`]: true
@@ -108,5 +108,3 @@ export const scheduleNotifications = async () => {
 
 const resetInterval = setInterval(scheduleNotifications, 30000);
 clearInterval(resetInterval);
-
-

@@ -39,6 +39,33 @@ const Profile = () => {
   });
   const [isSaving, setIsSaving] = useState(false);
 
+  // Parse existing time strings into hour, minute, period format
+  const parseTime = (timeStr, defaultPeriod) => {
+    if (!timeStr) {
+      console.log("Profile - No time string provided, using defaults");
+      return { hour: "06", minute: "00", period: defaultPeriod };
+    }
+
+    // Handle both formats: "HH:MM Period" and existing object format
+    if (typeof timeStr === "object" && timeStr.hour) {
+      return {
+        hour: timeStr.hour.padStart(2, "0"),
+        minute: timeStr.minute.padStart(2, "0"),
+        period: defaultPeriod,
+      };
+    }
+
+    // Handle string format "HH:MM Period"
+    const [time, period] = timeStr.split(" ");
+    const [hour, minute] = time.split(":");
+    const result = {
+      hour: hour.padStart(2, "0"),
+      minute: minute.padStart(2, "0"),
+      period: defaultPeriod,
+    };
+    return result;
+  };
+
   useEffect(() => {
     const fetchUserData = async () => {
       if (!user) return;
@@ -48,31 +75,22 @@ const Profile = () => {
 
       if (docSnap.exists()) {
         const data = docSnap.data();
+
         setUserData(data);
 
-        // Parse existing time strings into hour, minute, period format
-        const parseTime = (timeStr) => {
-          if (!timeStr) return { hour: "06", minute: "00", period: "AM" };
-          const [time] = timeStr.split(" ");
-          const [hour, minute] = time.split(":");
-          return {
-            hour: hour.padStart(2, "0"),
-            minute: minute.padStart(2, "0"),
-            period: timeStr.includes("PM") ? "PM" : "AM",
-          };
-        };
-
-        setFormData({
+        // Set form data with existing values
+        const formDataToSet = {
           fullName: data.fullName || user?.displayName || "",
           gender: data.gender || "",
           skinType: data.skinType || "",
           skinConcerns: data.skinConcerns || "",
           allergies: data.allergies || "",
           skincareRoutine: {
-            am: parseTime(data.skincareRoutine?.am),
-            pm: parseTime(data.skincareRoutine?.pm),
+            am: parseTime(data.skincareRoutine?.am, "AM"),
+            pm: parseTime(data.skincareRoutine?.pm, "PM"),
           },
-        });
+        };
+        setFormData(formDataToSet);
 
         // Initialize check-in status for today if needed
         const status = await getRoutineCheckInStatus();
@@ -131,6 +149,7 @@ const Profile = () => {
     const { name, value } = e.target;
     if (name.startsWith("am") || name.startsWith("pm")) {
       const [routine, timeComponent] = name.split("_");
+      const period = routine === "am" ? "AM" : "PM";
       setFormData((prev) => ({
         ...prev,
         skincareRoutine: {
@@ -138,7 +157,7 @@ const Profile = () => {
           [routine]: {
             ...prev.skincareRoutine[routine],
             [timeComponent]: value,
-            period: routine.toUpperCase(), // Ensure period stays fixed
+            period: period, // Use the determined period
           },
         },
       }));
@@ -362,7 +381,11 @@ const Profile = () => {
                     disabled={!editing}
                   />
                 ) : (
-                  userData?.skincareRoutine?.am || "Not specified"
+                  (() => {
+                    return (
+                      `${userData?.skincareRoutine?.am}` || "Not specified"
+                    );
+                  })()
                 )}
               </td>
             </tr>
@@ -379,7 +402,11 @@ const Profile = () => {
                     disabled={!editing}
                   />
                 ) : (
-                  userData?.skincareRoutine?.pm || "Not specified"
+                  (() => {
+                    return (
+                      `${userData?.skincareRoutine?.pm}` || "Not specified"
+                    );
+                  })()
                 )}
               </td>
             </tr>
@@ -394,7 +421,9 @@ const Profile = () => {
           <div className="routine-card">
             <h3>Morning Routine</h3>
             <p>Status: {routineStatus.amCompleted ? "Completed" : "Pending"}</p>
-            <p>Scheduled for: {userData?.skincareRoutine?.am || "Not set"}</p>
+            <p>
+              Scheduled for: {`${userData?.skincareRoutine?.am}` || "Not set"}
+            </p>
             {!routineStatus.amCompleted && (
               <button
                 className="checkin-button"
@@ -409,7 +438,9 @@ const Profile = () => {
           <div className="routine-card">
             <h3>Evening Routine</h3>
             <p>Status: {routineStatus.pmCompleted ? "Completed" : "Pending"}</p>
-            <p>Scheduled for: {userData?.skincareRoutine?.pm || "Not set"}</p>
+            <p>
+              Scheduled for: {`${userData?.skincareRoutine?.pm}` || "Not set"}
+            </p>
             {!routineStatus.pmCompleted && (
               <button
                 className="checkin-button"

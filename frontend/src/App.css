@@ -1,12 +1,12 @@
 :root {
   --light-bg: #fff5ee;
-  --light-gradient: linear-gradient(90deg, #ae7e7e, #ffeff6);
+  --light-gradient: linear-gradient(90deg, #f6b9b9, #d7909c);
   --light-text: #000000;
   --light-nav-bg: #ffffff00;
-  --dark-bg: #1a1a1a;
-  --dark-gradient: linear-gradient(90deg, #2c2c2c, #3d2a2a);
+  --dark-bg: #181e32;
+  --dark-gradient: linear-gradient(90deg, #181e32, #163867);
   --dark-text: #ffffff;
-  --dark-nav-bg: #00000000;
+  --dark-nav-bg: #dce0fe00;
 }
 
 .app {
@@ -36,7 +36,7 @@
 }
 
 .dark-mode .profile-container {
-  background: #2c2c2c;
+  background: #2d4a6e;
 }
 
 @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap");
@@ -119,7 +119,7 @@ form input {
   font-weight: bold;
   border: none;
   margin-top: 0.00001px;
-  background-color: rgb(250, 250, 250);
+  background-color: rgb(255, 255, 255);
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   border-top-left-radius: 15px;
   border-bottom-left-radius: 15px;
@@ -381,7 +381,7 @@ textarea {
   max-width: 600px;
   margin: 20px auto;
   padding: 20px;
-  background: #ffeff6;
+  background: #ffd3dc;
   border-radius: 10px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
@@ -395,12 +395,12 @@ textarea {
 .profile-avatar {
   width: 10rem;
   height: 10rem;
-  background-color: #ae7e7e;
+  background-color: #f6b9b9;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #ae7e7e;
+  border: 2px solid #f6b9b9;
 }
 
 .profile-avatar img {
@@ -426,7 +426,7 @@ textarea {
 
 .profile-email {
   font-size: 1rem;
-  color: gray;
+  color: rgb(0, 0, 0);
 }
 
 .profile-info-container {
@@ -449,30 +449,45 @@ textarea {
   width: 40%;
 }
 
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .profile-edit-button {
-  display: block;
-  width: 100%;
+  width: 30%;
+  text-align: center;
   margin-top: 15px;
   padding: 10px;
-  background: #ae7e7e;
-  color: white;
+  background: #ffffff;
+  color: black;
   border: none;
   border-radius: 5px;
-  text-align: center;
+  font-weight: bold;
+}
+
+.profile-edit-button:hover {
+  background-color: #cba3ab;
 }
 
 .profile-save-button {
-  width: 100%;
+  width: 30%;
   padding: 10px;
   margin-top: 5px;
   border: none;
   border-radius: 5px;
   text-align: center;
+  font-weight: bold;
 }
 
 .profile-save-button {
-  background-color: #ae7e7e;
-  color: white;
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.profile-save-button:hover {
+  background-color: #cba3ab;
 }
 
 /* theme toggle */
@@ -516,7 +531,7 @@ textarea {
   background-color: #ffeff6;
   transition: 0.4s;
   border-radius: 24px;
-  border: 2px solid #ae7e7e;
+  border: 2px solid #f6b9b9;
 }
 
 .toggle-slider:before {
@@ -537,6 +552,12 @@ input:checked + .toggle-slider {
 
 input:checked + .toggle-slider:before {
   transform: translateX(22px);
+}
+
+input {
+  padding: 5px;
+  border-radius: 5px;
+  border-color: white;
 }
 
 input:disabled + .toggle-slider {
@@ -572,7 +593,7 @@ input:disabled + .toggle-slider {
   width: 16px;
   height: 16px;
   cursor: pointer;
-  accent-color: #ae7e7e;
+  accent-color: #f6b9b9;
 }
 
 .dark-mode .auto-toggle label {
@@ -682,7 +703,7 @@ input:disabled + .toggle-slider {
 }
 
 .dark-mode .white-box {
-  background-color: #333;
+  background-color: #333333;
   border-color: #555;
 }
 
@@ -733,4 +754,14 @@ input:disabled + .toggle-slider {
 .dark-mode .MuiButton-root {
   background-color: #ba68c8 !important;
   color: white !important;
+}
+
+/* Home.js */
+
+.search-bar {
+  padding: 20px 20px;
+}
+
+.search-input button i {
+  padding: 15px 10px;
 }

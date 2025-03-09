@@ -110,44 +110,29 @@ def get_formatted_ingredients(data: dict):
 
         Response: A JSON error response if the input is invalid.
 
-    Errors:
-        - If the `ingredients` key is missing, returns:
-            ```
-            { "error": "Missing ingredients" }, 400
-            ```
-        - If `ingredients` is not a list, returns:
-            ```
-            { "error": "Invalid ingredients (Should be a list)" }, 400
-            ```
+    Raises:
+        ValueError: If input is missing or incorrectly formatted, or an ingredient is missing name, score, or concerns.
+        ```
 
     Description:
         This function validates and formats a list of skincare ingredients into a structured
         string format.
     """
-    data = request.json
     ingredients = data.get("ingredients")
 
     if not ingredients:
-        return jsonify({"error": "Missing ingredients"}), 400
+        raise ValueError("Missing ingredients")
     if not isinstance(ingredients, list):
-        return jsonify({"error": "Invalid ingredients (Should be a list)"}), 400
+        raise ValueError("Invalid ingredients (Should be a list)")
 
     for i in ingredients:
         if "name" not in i:
-            return jsonify({"error": "Ingredient missing 'name' field"}), 400
+            raise ValueError("Ingredient missing 'name' field")
         if "score" not in i:
-            return (
-                jsonify({"error": f"Ingredient '{i['name']}' missing 'score' field"}),
-                400,
-            )
+            raise ValueError(f"Ingredient '{i['name']}' missing 'score' field")
         if "concerns" not in i or not isinstance(i["concerns"], list):
-            return (
-                jsonify(
-                    {
-                        "error": f"Ingredient '{i['name']}' missing 'concerns' field or the 'concern' field is not a list"
-                    }
-                ),
-                400,
+            raise ValueError(
+                f"Ingredient '{i['name']}' missing 'concerns' field or the 'concern' field is not a list"
             )
 
     ingredient_details = "\n".join(
@@ -208,30 +193,25 @@ def ingredient_summary():
     """
     try:
         data = request.json
-        ingredients = data.get("ingredients", [])
+        try:
+            ingredient_details = get_formatted_ingredients(data)
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
 
-        if not isinstance(ingredients, list):
-            return jsonify({"error": "Invalid ingredients (Should be a list)"}), 400
+        llm_input = (
+            f"Skincare Ingredients:\n{ingredient_details}\n\n"
+            "Generate a **list** (max 5 words) of key skincare benefits. Return only a JSON list."
+        )
 
-        if not ingredients:
-            return jsonify({"summary": []})  # Return empty list if no valid ingredients
-
-        # Generate a hash key based on ingredient names and scores
+        # Generate a hash key based on ingredient details
         ingredients_key = hashlib.md5(
-            json.dumps(ingredients, sort_keys=True).encode()
+            json.dumps(ingredient_details, sort_keys=True).encode()
         ).hexdigest()
 
         # Check cache first
         if ingredients_key in ingredient_summary_cache:
             print("Using cached summary")
             return jsonify({"summary": ingredient_summary_cache[ingredients_key]})
-
-        ingredient_details = get_formatted_ingredients({"ingredients": ingredients})
-
-        llm_input = (
-            f"Skincare Ingredients:\n{ingredient_details}\n\n"
-            "Generate a **list** (max 5 words) of key skincare benefits. Return only a JSON list."
-        )
 
         llm_chain = get_ingredient_summary_chain()
         response = llm_chain.invoke({"ingredients": llm_input})
@@ -249,7 +229,7 @@ def ingredient_summary():
         except json.JSONDecodeError:
             return jsonify({"summary": []})  # Handle JSON parsing errors
 
-    except Exception as e:
+    except ValueError as e:
         return jsonify({"error": str(e)}), 500
 
 
@@ -370,7 +350,10 @@ def recommend_product():
     if not user_profile:
         return jsonify({"error": "Missing user profile"}), 400
 
-    ingredient_details = get_formatted_ingredients(data)
+    try:
+        ingredient_details = get_formatted_ingredients(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
     # If client didn't provide a session_id, generate one automatically
     if not session_id:

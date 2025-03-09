@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { auth, db } from "../firebase-config";
-import { doc, updateDoc } from "firebase/firestore";
-import "./ProfileCreation.css";
+import React, { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { auth, db } from "../firebase-config"
+import { doc, updateDoc } from "firebase/firestore"
+import "./ProfileCreation.css"
 
 function ProfileCreation() {
-  const navigate = useNavigate();
-  const [editing, setEditing] = useState(true);
-  const [errors, setErrors] = useState({});
+  const navigate = useNavigate()
+  const [editing, setEditing] = useState(true)
+  const [errors, setErrors] = useState({})
   const [formData, setFormData] = useState({
     fullName: "",
     gender: "",
@@ -18,21 +18,21 @@ function ProfileCreation() {
       am: { hour: "6", minute: "00", period: "AM" },
       pm: { hour: "6", minute: "00", period: "PM" },
     },
-  });
+  })
 
   // Generate time options
   const hours = Array.from({ length: 12 }, (_, i) =>
     (i + 1).toString().padStart(2, "0"),
-  );
+  )
   const minutes = Array.from({ length: 60 }, (_, i) =>
     i.toString().padStart(2, "0"),
-  );
+  )
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const handleChange = e => {
+    const { name, value } = e.target
     if (name.startsWith("am") || name.startsWith("pm")) {
-      const [routine, timeComponent] = name.split("_");
-      setFormData((prev) => ({
+      const [routine, timeComponent] = name.split("_")
+      setFormData(prev => ({
         ...prev,
         skincareRoutine: {
           ...prev.skincareRoutine,
@@ -42,45 +42,45 @@ function ProfileCreation() {
             period: routine.toUpperCase(), // Ensure period stays fixed
           },
         },
-      }));
+      }))
     } else {
-      setFormData((prev) => ({
+      setFormData(prev => ({
         ...prev,
         [name]: value,
-      }));
+      }))
     }
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors((prev) => ({
+      setErrors(prev => ({
         ...prev,
         [name]: "",
-      }));
+      }))
     }
-  };
+  }
 
   const validateForm = () => {
-    const newErrors = {};
-    if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
-    if (!formData.gender) newErrors.gender = "Please select a gender";
-    if (!formData.skinType) newErrors.skinType = "Please select a skin type";
+    const newErrors = {}
+    if (!formData.fullName.trim()) newErrors.fullName = "Full name is required"
+    if (!formData.gender) newErrors.gender = "Please select a gender"
+    if (!formData.skinType) newErrors.skinType = "Please select a skin type"
     if (!formData.skinConcerns.trim())
-      newErrors.skinConcerns = "Skin concerns are required";
+      newErrors.skinConcerns = "Skin concerns are required"
     if (!formData.allergies.trim())
-      newErrors.allergies = "Please specify allergies or write 'None'";
+      newErrors.allergies = "Please specify allergies or write 'None'"
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSave = async () => {
     if (!validateForm()) {
-      return;
+      return
     }
 
     try {
-      const user = auth.currentUser;
+      const user = auth.currentUser
       if (user) {
-        const userRef = doc(db, "users", user.uid);
+        const userRef = doc(db, "users", user.uid)
         // Format times before saving
         const formattedData = {
           ...formData,
@@ -88,15 +88,15 @@ function ProfileCreation() {
             am: `${formData.skincareRoutine.am.hour}:${formData.skincareRoutine.am.minute}`,
             pm: `${formData.skincareRoutine.pm.hour}:${formData.skincareRoutine.pm.minute}`,
           },
-        };
-        await updateDoc(userRef, formattedData);
-        setEditing(false);
-        navigate("/profile");
+        }
+        await updateDoc(userRef, formattedData)
+        setEditing(false)
+        navigate("/profile")
       }
     } catch (error) {
-      console.error("Error saving profile:", error);
+      console.error("Error saving profile:", error)
     }
-  };
+  }
 
   const TimeSelector = ({ prefix, value, onChange, disabled }) => (
     <div className="time-selector">
@@ -106,7 +106,7 @@ function ProfileCreation() {
         onChange={onChange}
         disabled={disabled}
       >
-        {hours.map((hour) => (
+        {hours.map(hour => (
           <option key={hour} value={hour}>
             {hour}
           </option>
@@ -119,7 +119,7 @@ function ProfileCreation() {
         onChange={onChange}
         disabled={disabled}
       >
-        {minutes.map((minute) => (
+        {minutes.map(minute => (
           <option key={minute} value={minute}>
             {minute}
           </option>
@@ -127,12 +127,12 @@ function ProfileCreation() {
       </select>
       <span>{prefix.toUpperCase()}</span>
     </div>
-  );
+  )
 
   return (
     <div className="profileCreationPage">
       <h1>Create Your Profile</h1>
-      <form className="profile-form" onSubmit={(e) => e.preventDefault()}>
+      <form className="profile-form" onSubmit={e => e.preventDefault()}>
         <div className="form-columns">
           <div className="form-column">
             <div className="form-group">
@@ -256,7 +256,7 @@ function ProfileCreation() {
         </div>
       </form>
     </div>
-  );
+  )
 }
 
-export default ProfileCreation;
+export default ProfileCreation

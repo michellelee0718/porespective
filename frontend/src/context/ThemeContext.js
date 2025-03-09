@@ -1,63 +1,63 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react"
 
-export const ThemeContext = createContext();
+export const ThemeContext = createContext()
 
 export const ThemeProvider = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isAutoMode, setIsAutoMode] = useState(true);
-  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [isAutoMode, setIsAutoMode] = useState(true)
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false)
 
   const checkTime = () => {
-    const hours = new Date().getHours();
-    return hours >= 18 || hours < 6;
-  };
+    const hours = new Date().getHours()
+    return hours >= 18 || hours < 6
+  }
 
   useEffect(() => {
     // load saved preferences
-    const savedMode = localStorage.getItem("themeMode");
-    const savedAutoMode = localStorage.getItem("autoMode");
+    const savedMode = localStorage.getItem("themeMode")
+    const savedAutoMode = localStorage.getItem("autoMode")
 
     if (savedAutoMode) {
-      setIsAutoMode(savedAutoMode === "true");
+      setIsAutoMode(savedAutoMode === "true")
     }
 
     if (savedMode) {
-      setIsDarkMode(savedMode === "dark");
+      setIsDarkMode(savedMode === "dark")
     } else if (savedAutoMode === "true" || savedAutoMode === null) {
-      const isDark = checkTime();
-      setIsDarkMode(isDark);
+      const isDark = checkTime()
+      setIsDarkMode(isDark)
     }
 
-    setInitialLoadComplete(true);
-  }, []);
+    setInitialLoadComplete(true)
+  }, [])
 
   useEffect(() => {
-    if (!initialLoadComplete) return;
+    if (!initialLoadComplete) return
 
     if (isAutoMode) {
-      const isDark = checkTime();
-      setIsDarkMode(isDark);
-      localStorage.setItem("themeMode", isDark ? "dark" : "light");
+      const isDark = checkTime()
+      setIsDarkMode(isDark)
+      localStorage.setItem("themeMode", isDark ? "dark" : "light")
     }
-  }, [isAutoMode, initialLoadComplete]);
+  }, [isAutoMode, initialLoadComplete])
 
   const toggleTheme = () => {
     // toggle theme
-    setIsDarkMode((prev) => {
-      const newMode = !prev;
-      localStorage.setItem("themeMode", newMode ? "dark" : "light");
-      return newMode;
-    });
-  };
+    setIsDarkMode(prev => {
+      const newMode = !prev
+      localStorage.setItem("themeMode", newMode ? "dark" : "light")
+      return newMode
+    })
+  }
 
   const toggleAutoMode = () => {
     // toggle auto mode
-    setIsAutoMode((prev) => {
-      const newAutoMode = !prev;
-      localStorage.setItem("autoMode", newAutoMode.toString());
-      return newAutoMode;
-    });
-  };
+    setIsAutoMode(prev => {
+      const newAutoMode = !prev
+      localStorage.setItem("autoMode", newAutoMode.toString())
+      return newAutoMode
+    })
+  }
 
   return (
     <ThemeContext.Provider
@@ -65,7 +65,7 @@ export const ThemeProvider = ({ children }) => {
     >
       {children}
     </ThemeContext.Provider>
-  );
-};
+  )
+}
 
-export const useTheme = () => useContext(ThemeContext);
+export const useTheme = () => useContext(ThemeContext)

@@ -1,37 +1,37 @@
-import React, { useEffect, useState } from "react";
-import "./App.css";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Profile from "./pages/Profile";
-import Results from "./pages/Results"; // Import Results page
-import Registration from "./pages/Registration";
-import ProfileCreation from "./pages/ProfileCreation";
-import { ThemeProvider } from "./context/ThemeContext";
-import { useTheme } from "./context/ThemeContext";
-import { signOut } from "firebase/auth";
-import { auth } from "./firebase-config";
-import { useAuthState } from "react-firebase-hooks/auth";
-import ThemeToggle from "./components/ThemeToggle";
-import { scheduleNotifications } from "./components/Notification";
-import { initDailyCheckIn } from "./firebase/routineService";
-import "./components/RoutineCheckIn.css";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "./firebase-config";
+import React, { useEffect, useState } from "react"
+import "./App.css"
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom"
+import Home from "./pages/Home"
+import Login from "./pages/Login"
+import Profile from "./pages/Profile"
+import Results from "./pages/Results" // Import Results page
+import Registration from "./pages/Registration"
+import ProfileCreation from "./pages/ProfileCreation"
+import { ThemeProvider } from "./context/ThemeContext"
+import { useTheme } from "./context/ThemeContext"
+import { signOut } from "firebase/auth"
+import { auth } from "./firebase-config"
+import { useAuthState } from "react-firebase-hooks/auth"
+import ThemeToggle from "./components/ThemeToggle"
+import { scheduleNotifications } from "./components/Notification"
+import { initDailyCheckIn } from "./firebase/routineService"
+import "./components/RoutineCheckIn.css"
+import { doc, getDoc, setDoc } from "firebase/firestore"
+import { db } from "./firebase-config"
 
 function AppContent() {
-  const { isDarkMode } = useTheme();
-  const [isAuth, setIsAuth] = useState(false);
-  const [user] = useAuthState(auth);
-  const [userData, setUserData] = useState(null);
+  const { isDarkMode } = useTheme()
+  const [isAuth, setIsAuth] = useState(false)
+  const [user] = useAuthState(auth)
+  const [userData, setUserData] = useState(null)
 
   useEffect(() => {
     if (user) {
-      setIsAuth(true);
+      setIsAuth(true)
 
       const ensureUserDocument = async () => {
-        const userRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(userRef);
+        const userRef = doc(db, "users", user.uid)
+        const docSnap = await getDoc(userRef)
 
         if (!docSnap.exists()) {
           const userData = {
@@ -45,38 +45,38 @@ function AppContent() {
               )}&background=ae7e7e&color=fff`,
             createdAt: new Date(),
             skincareRoutine: { am: "", pm: "" },
-          };
+          }
 
-          await setDoc(userRef, userData);
+          await setDoc(userRef, userData)
         }
 
-        setUserData(docSnap.data());
+        setUserData(docSnap.data())
         // Initialize today's check-in status
-        initDailyCheckIn();
+        initDailyCheckIn()
 
         // Schedule notifications
-        scheduleNotifications();
-      };
+        scheduleNotifications()
+      }
 
-      ensureUserDocument();
+      ensureUserDocument()
     }
-  }, [user]);
+  }, [user])
 
   const signUserOut = () => {
     signOut(auth).then(() => {
-      const themeMode = localStorage.getItem("themeMode");
-      const autoMode = localStorage.getItem("autoMode");
+      const themeMode = localStorage.getItem("themeMode")
+      const autoMode = localStorage.getItem("autoMode")
 
-      localStorage.clear();
+      localStorage.clear()
 
-      if (themeMode) localStorage.setItem("themeMode", themeMode);
-      if (autoMode) localStorage.setItem("autoMode", autoMode);
+      if (themeMode) localStorage.setItem("themeMode", themeMode)
+      if (autoMode) localStorage.setItem("autoMode", autoMode)
 
-      setIsAuth(false);
-      setUserData(null);
-      window.location.pathname = "/login";
-    });
-  };
+      setIsAuth(false)
+      setUserData(null)
+      window.location.pathname = "/login"
+    })
+  }
 
   return (
     <div className={`app ${isDarkMode ? "dark-mode" : "light-mode"}`}>
@@ -107,10 +107,10 @@ function AppContent() {
                         height="30px"
                         width="30px"
                         alt=""
-                        onError={(e) => {
+                        onError={e => {
                           e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
                             user.displayName || user.email.split("@")[0],
-                          )}&background=ae7e7e&color=fff`;
+                          )}&background=ae7e7e&color=fff`
                         }}
                       />
                       <Link to="/profile"> profile </Link>
@@ -135,7 +135,7 @@ function AppContent() {
         </Routes>
       </Router>
     </div>
-  );
+  )
 }
 
 function App() {
@@ -143,7 +143,7 @@ function App() {
     <ThemeProvider>
       <AppContent />
     </ThemeProvider>
-  );
+  )
 }
 
-export default App;
+export default App

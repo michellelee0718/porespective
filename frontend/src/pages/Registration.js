@@ -1,20 +1,20 @@
-import React, { useState } from "react";
-import { auth, db } from "../firebase-config";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
-import "./Registration.css";
+import React, { useState } from "react"
+import { auth, db } from "../firebase-config"
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth"
+import { doc, setDoc } from "firebase/firestore"
+import { useNavigate } from "react-router-dom"
+import "./Registration.css"
 
 function Registration() {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const navigate = useNavigate()
 
-  const handleSignUp = async (e) => {
-    e.preventDefault();
-    setError("");
+  const handleSignUp = async e => {
+    e.preventDefault()
+    setError("")
 
     try {
       // Create user in Firebase Auth
@@ -22,8 +22,8 @@ function Registration() {
         auth,
         email,
         password,
-      );
-      const user = userCredential.user;
+      )
+      const user = userCredential.user
 
       // Set display name and default photo URL
       await updateProfile(user, {
@@ -31,7 +31,7 @@ function Registration() {
         photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(
           username,
         )}&background=ae7e7e&color=fff`,
-      });
+      })
 
       // Create user document in Firestore
       await setDoc(doc(db, "users", user.uid), {
@@ -48,23 +48,23 @@ function Registration() {
           amCompleted: false,
           pmCompleted: false,
         },
-      });
+      })
 
       // Navigate to profile creation
-      navigate("/profile-creation");
+      navigate("/profile-creation")
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("Registration error:", error)
       if (error.code === "auth/email-already-in-use") {
-        setError("Email is already registered");
+        setError("Email is already registered")
       } else if (error.code === "auth/invalid-email") {
-        setError("Invalid email format");
+        setError("Invalid email format")
       } else if (error.code === "auth/weak-password") {
-        setError("Password should be at least 6 characters");
+        setError("Password should be at least 6 characters")
       } else {
-        setError("An error occurred during registration");
+        setError("An error occurred during registration")
       }
     }
-  };
+  }
 
   return (
     <div className="registrationPage">
@@ -76,7 +76,7 @@ function Registration() {
             type="text"
             placeholder="Username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={e => setUsername(e.target.value)}
             required
           />
         </div>
@@ -85,7 +85,7 @@ function Registration() {
             type="email"
             placeholder="Email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
             required
           />
         </div>
@@ -94,7 +94,7 @@ function Registration() {
             type="password"
             placeholder="Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={e => setPassword(e.target.value)}
             required
           />
         </div>
@@ -103,7 +103,7 @@ function Registration() {
         </button>
       </form>
     </div>
-  );
+  )
 }
 
-export default Registration;
+export default Registration

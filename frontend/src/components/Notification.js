@@ -74,9 +74,7 @@ export const scheduleNotifications = async () => {
     let pmNotification = userData.pmNotification;
 
     if (!am && !pm && !amCompleted && !pmCompleted) return;
-    console.log("here")
     const now = new Date();
-    console.log("here")
     let hours = now.getHours();
 
 
@@ -94,9 +92,7 @@ export const scheduleNotifications = async () => {
           } 
     } else {
         const amTime = now.getHours().toString() + ":" + now.getMinutes().toString().padStart(2, '0');
-        console.log("here pls",now, now.getHours())
         if (amTime === am && !amCompleted && !amNotification) {
-          console.log("inside")
            showNotification("Time for your morning skincare routine!");
            await updateDoc(userRef, {
             [`amNotification`]: true

@@ -1,38 +1,38 @@
-import React, { useState } from "react"
-import { useLocation } from "react-router-dom"
-import "./Results.css"
-import { doc, getDoc } from "firebase/firestore"
-import { auth, db } from "../firebase-config"
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import "./Results.css";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase-config";
 
 const Results = () => {
-  const location = useLocation()
+  const location = useLocation();
   const { productName, ingredients, productUrl } = location.state || {
     productName: "Unknown Product",
     ingredients: [],
     productUrl: "#",
-  }
+  };
 
-  const [recommendation, setRecommendation] = useState("")
-  const [sessionId, setSessionId] = useState(null)
-  const [isChatOpen, setIsChatOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [userMessage, setUserMessage] = useState("")
-  const [messages, setMessages] = useState([])
-  const [expandedConcerns, setExpandedConcerns] = useState({})
-  const [ingredientSummary, setIngredientSummary] = useState([]) // Store as an array
-  const [isSummaryLoading, setIsSummaryLoading] = useState(false) // Loading state for summary
+  const [recommendation, setRecommendation] = useState("");
+  const [sessionId, setSessionId] = useState(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userMessage, setUserMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [expandedConcerns, setExpandedConcerns] = useState({});
+  const [ingredientSummary, setIngredientSummary] = useState([]); // Store as an array
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false); // Loading state for summary
 
   const fetchIngredientSummary = async () => {
-    const cacheKey = JSON.stringify(ingredients) // Unique key based on ingredients
+    const cacheKey = JSON.stringify(ingredients); // Unique key based on ingredients
 
     // Check local storage cache
-    const cachedSummary = localStorage.getItem(cacheKey)
+    const cachedSummary = localStorage.getItem(cacheKey);
     if (cachedSummary) {
-      setIngredientSummary(JSON.parse(cachedSummary))
-      return
+      setIngredientSummary(JSON.parse(cachedSummary));
+      return;
     }
 
-    setIsSummaryLoading(true)
+    setIsSummaryLoading(true);
     try {
       const response = await fetch("http://127.0.0.1:5000/ingredient-summary", {
         method: "POST",
@@ -40,48 +40,48 @@ const Results = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ ingredients }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
       if (Array.isArray(data.summary)) {
-        setIngredientSummary(data.summary)
-        localStorage.setItem(cacheKey, JSON.stringify(data.summary)) // Cache it
+        setIngredientSummary(data.summary);
+        localStorage.setItem(cacheKey, JSON.stringify(data.summary)); // Cache it
       } else {
-        setIngredientSummary([])
+        setIngredientSummary([]);
       }
     } catch (error) {
-      console.error("Error fetching ingredient summary:", error)
-      setIngredientSummary([])
+      console.error("Error fetching ingredient summary:", error);
+      setIngredientSummary([]);
     }
-    setIsSummaryLoading(false)
-  }
+    setIsSummaryLoading(false);
+  };
 
   const fetchRecommendation = async () => {
-    console.log("Fetching user profile...")
-    let userProfile = {}
+    console.log("Fetching user profile...");
+    let userProfile = {};
 
     if (auth.currentUser) {
       try {
-        const userRef = doc(db, "users", auth.currentUser.uid)
-        const docSnap = await getDoc(userRef)
+        const userRef = doc(db, "users", auth.currentUser.uid);
+        const docSnap = await getDoc(userRef);
 
         if (docSnap.exists()) {
-          userProfile = docSnap.data()
-          console.log("Retrieved user profile from Firestore:", userProfile)
+          userProfile = docSnap.data();
+          console.log("Retrieved user profile from Firestore:", userProfile);
         } else {
-          console.warn("User profile not found in Firestore.")
+          console.warn("User profile not found in Firestore.");
         }
       } catch (error) {
-        console.error("Error fetching user profile from Firestore:", error)
+        console.error("Error fetching user profile from Firestore:", error);
       }
     } else {
-      console.warn("No authenticated user found.")
+      console.warn("No authenticated user found.");
     }
 
-    console.log("Final User Profile sent to backend:", userProfile)
+    console.log("Final User Profile sent to backend:", userProfile);
 
-    console.log("Fetching recommendation...")
-    setIsLoading(true)
+    console.log("Fetching recommendation...");
+    setIsLoading(true);
     try {
       const response = await fetch("http://127.0.0.1:5000/recommend", {
         method: "POST",
@@ -95,130 +95,130 @@ const Results = () => {
           ingredients: ingredients,
           user_profile: userProfile,
         }),
-      })
+      });
 
-      const receivedSessionId = response.headers.get("X-Session-Id")
+      const receivedSessionId = response.headers.get("X-Session-Id");
 
       // Set the session ID immediately when we receive it
       if (receivedSessionId) {
-        setSessionId(receivedSessionId)
+        setSessionId(receivedSessionId);
       }
 
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      let fullResponse = ""
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullResponse = "";
 
       // Add initial AI message
-      setMessages(prevMessages => [
+      setMessages((prevMessages) => [
         ...prevMessages,
         { type: "ai", content: "", isStreaming: true },
-      ])
+      ]);
 
       while (true) {
-        const { value, done } = await reader.read()
-        if (done) break
+        const { value, done } = await reader.read();
+        if (done) break;
 
-        const text = decoder.decode(value)
+        const text = decoder.decode(value);
 
-        const lines = text.split("\n")
+        const lines = text.split("\n");
 
         for (const line of lines) {
           if (line.startsWith("data: ")) {
             try {
-              const data = JSON.parse(line.slice(6))
+              const data = JSON.parse(line.slice(6));
               if (data.content) {
-                fullResponse += data.content
+                fullResponse += data.content;
 
-                setMessages(prevMessages => {
-                  const lastMessage = prevMessages[prevMessages.length - 1]
+                setMessages((prevMessages) => {
+                  const lastMessage = prevMessages[prevMessages.length - 1];
                   if (lastMessage && lastMessage.isStreaming) {
                     return [
                       ...prevMessages.slice(0, -1),
                       { ...lastMessage, content: fullResponse },
-                    ]
+                    ];
                   }
-                  return prevMessages
-                })
+                  return prevMessages;
+                });
               }
             } catch (e) {
-              console.error("Error parsing SSE data:", e)
-              console.error("Problematic line:", line)
+              console.error("Error parsing SSE data:", e);
+              console.error("Problematic line:", line);
             }
           }
         }
       }
 
       // Final update to remove streaming flag
-      setMessages(prevMessages => {
-        const lastMessage = prevMessages[prevMessages.length - 1]
+      setMessages((prevMessages) => {
+        const lastMessage = prevMessages[prevMessages.length - 1];
         if (lastMessage && lastMessage.isStreaming) {
           return [
             ...prevMessages.slice(0, -1),
             { ...lastMessage, content: fullResponse, isStreaming: false },
-          ]
+          ];
         }
-        return prevMessages
-      })
+        return prevMessages;
+      });
 
-      setRecommendation(fullResponse)
-      setSessionId(receivedSessionId)
+      setRecommendation(fullResponse);
+      setSessionId(receivedSessionId);
     } catch (error) {
-      console.error("Error:", error)
-      setMessages(prevMessages => [
+      console.error("Error:", error);
+      setMessages((prevMessages) => [
         ...prevMessages,
         { type: "ai", content: "Failed to fetch recommendation." },
-      ])
+      ]);
     }
-    setIsLoading(false)
-  }
+    setIsLoading(false);
+  };
 
   const handleAskAI = async () => {
-    setIsChatOpen(true)
-    setMessages(prevMessages => [
+    setIsChatOpen(true);
+    setMessages((prevMessages) => [
       ...prevMessages,
       {
         type: "ai",
         content: `Hello! I'd be happy to analyze ${productName} for you.`,
       },
-    ])
+    ]);
 
     if (!recommendation) {
-      await fetchRecommendation()
+      await fetchRecommendation();
     } else {
-      setMessages(prevMessages => [
+      setMessages((prevMessages) => [
         ...prevMessages,
         { type: "ai", content: recommendation },
-      ])
+      ]);
     }
-  }
+  };
 
   // Follow up questions
-  const handleSendMessage = async e => {
-    e.preventDefault()
-    if (!userMessage.trim()) return
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!userMessage.trim()) return;
 
     // Add user message to chat
-    setMessages(prevMessages => [
+    setMessages((prevMessages) => [
       ...prevMessages,
       { type: "user", content: userMessage },
-    ])
-    const currentMessage = userMessage
-    setUserMessage("")
-    setIsLoading(true)
+    ]);
+    const currentMessage = userMessage;
+    setUserMessage("");
+    setIsLoading(true);
 
     try {
       if (!sessionId) {
-        console.log("No session ID found!")
-        setMessages(prev => [
+        console.log("No session ID found!");
+        setMessages((prev) => [
           ...prev,
           {
             type: "ai",
             content:
               "No session found. Please click 'Ask AI for Recommendation' first.",
           },
-        ])
-        setIsLoading(false)
-        return
+        ]);
+        setIsLoading(false);
+        return;
       }
 
       const response = await fetch("http://127.0.0.1:5000/chat", {
@@ -232,75 +232,75 @@ const Results = () => {
           session_id: sessionId,
           message: currentMessage,
         }),
-      })
+      });
 
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      let fullResponse = ""
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullResponse = "";
 
       // Add initial AI message
-      setMessages(prevMessages => [
+      setMessages((prevMessages) => [
         ...prevMessages,
         { type: "ai", content: "", isStreaming: true },
-      ])
+      ]);
 
       while (true) {
-        const { value, done } = await reader.read()
-        if (done) break
+        const { value, done } = await reader.read();
+        if (done) break;
 
-        const text = decoder.decode(value)
-        const lines = text.split("\n")
+        const text = decoder.decode(value);
+        const lines = text.split("\n");
 
         for (const line of lines) {
           if (line.startsWith("data: ")) {
             try {
-              const data = JSON.parse(line.slice(6))
+              const data = JSON.parse(line.slice(6));
               if (data.content) {
-                fullResponse += data.content
+                fullResponse += data.content;
 
-                setMessages(prevMessages => {
-                  const lastMessage = prevMessages[prevMessages.length - 1]
+                setMessages((prevMessages) => {
+                  const lastMessage = prevMessages[prevMessages.length - 1];
                   if (lastMessage && lastMessage.isStreaming) {
                     return [
                       ...prevMessages.slice(0, -1),
                       { ...lastMessage, content: fullResponse },
-                    ]
+                    ];
                   }
-                  return prevMessages
-                })
+                  return prevMessages;
+                });
               }
             } catch (e) {
-              console.error("Error parsing SSE data:", e)
+              console.error("Error parsing SSE data:", e);
             }
           }
         }
       }
 
       // Final update to remove streaming flag
-      setMessages(prevMessages => {
-        const lastMessage = prevMessages[prevMessages.length - 1]
+      setMessages((prevMessages) => {
+        const lastMessage = prevMessages[prevMessages.length - 1];
         if (lastMessage && lastMessage.isStreaming) {
           return [
             ...prevMessages.slice(0, -1),
             { ...lastMessage, content: fullResponse, isStreaming: false },
-          ]
+          ];
         }
-        return prevMessages
-      })
+        return prevMessages;
+      });
     } catch (error) {
-      console.error("Error during chat request:", error)
-      setMessages(prev => [
+      console.error("Error during chat request:", error);
+      setMessages((prev) => [
         ...prev,
         { type: "ai", content: "An error occurred. Please try again." },
-      ])
+      ]);
     }
-    setIsLoading(false)
-  }
+    setIsLoading(false);
+  };
 
   const handleCloseChat = () => {
-    setIsChatOpen(false)
+    setIsChatOpen(false);
     // setMessages([]); // Optional: clear messages when closing
-  }
+  };
 
   return (
     <div className="results-container">
@@ -320,7 +320,7 @@ const Results = () => {
                 <button
                   className="toggle-concerns"
                   onClick={() =>
-                    setExpandedConcerns(prevState => ({
+                    setExpandedConcerns((prevState) => ({
                       ...prevState,
                       [index]: !prevState[index],
                     }))
@@ -396,7 +396,7 @@ const Results = () => {
             <input
               type="text"
               value={userMessage}
-              onChange={e => setUserMessage(e.target.value)}
+              onChange={(e) => setUserMessage(e.target.value)}
               placeholder="Type your follow-up question..."
               className="chat-input"
             />
@@ -407,7 +407,7 @@ const Results = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Results
+export default Results;

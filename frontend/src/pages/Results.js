@@ -12,27 +12,27 @@ const Results = () => {
     productUrl: "#",
   }
 
-  const [recommendation, setRecommendation] = useState("");
-  const [sessionId, setSessionId] = useState(null);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [userMessage, setUserMessage] = useState("");
-  const [messages, setMessages] = useState([]);
-  const [expandedConcerns, setExpandedConcerns] = useState({});
-  const [ingredientSummary, setIngredientSummary] = useState([]); // Store as an array
-  const [isSummaryLoading, setIsSummaryLoading] = useState(false); // Loading state for summary
+  const [recommendation, setRecommendation] = useState("")
+  const [sessionId, setSessionId] = useState(null)
+  const [isChatOpen, setIsChatOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [userMessage, setUserMessage] = useState("")
+  const [messages, setMessages] = useState([])
+  const [expandedConcerns, setExpandedConcerns] = useState({})
+  const [ingredientSummary, setIngredientSummary] = useState([]) // Store as an array
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false) // Loading state for summary
 
   const fetchIngredientSummary = async () => {
-    const cacheKey = JSON.stringify(ingredients); // Unique key based on ingredients
+    const cacheKey = JSON.stringify(ingredients) // Unique key based on ingredients
 
     // Check local storage cache
-    const cachedSummary = localStorage.getItem(cacheKey);
+    const cachedSummary = localStorage.getItem(cacheKey)
     if (cachedSummary) {
-      setIngredientSummary(JSON.parse(cachedSummary));
-      return;
+      setIngredientSummary(JSON.parse(cachedSummary))
+      return
     }
 
-    setIsSummaryLoading(true);
+    setIsSummaryLoading(true)
     try {
       const response = await fetch("http://127.0.0.1:5000/ingredient-summary", {
         method: "POST",
@@ -40,21 +40,21 @@ const Results = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ ingredients }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
       if (Array.isArray(data.summary)) {
-        setIngredientSummary(data.summary);
-        localStorage.setItem(cacheKey, JSON.stringify(data.summary)); // Cache it
+        setIngredientSummary(data.summary)
+        localStorage.setItem(cacheKey, JSON.stringify(data.summary)) // Cache it
       } else {
-        setIngredientSummary([]);
+        setIngredientSummary([])
       }
     } catch (error) {
-      console.error("Error fetching ingredient summary:", error);
-      setIngredientSummary([]);
+      console.error("Error fetching ingredient summary:", error)
+      setIngredientSummary([])
     }
-    setIsSummaryLoading(false);
-  };
+    setIsSummaryLoading(false)
+  }
 
   const fetchRecommendation = async () => {
     console.log("Fetching user profile...")

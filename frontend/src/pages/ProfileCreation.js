@@ -90,16 +90,6 @@ function ProfileCreation() {
           },
         };
 
-        console.log("ProfileCreation - Saving data:", formattedData);
-        console.log(
-          "ProfileCreation - AM time:",
-          formattedData.skincareRoutine.am,
-        );
-        console.log(
-          "ProfileCreation - PM time:",
-          formattedData.skincareRoutine.pm,
-        );
-
         await updateDoc(userRef, formattedData);
         setEditing(false);
         navigate("/profile");

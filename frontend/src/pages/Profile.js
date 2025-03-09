@@ -41,12 +41,6 @@ const Profile = () => {
 
   // Parse existing time strings into hour, minute, period format
   const parseTime = (timeStr, defaultPeriod) => {
-    console.log(
-      "Profile - Parsing time string:",
-      timeStr,
-      "with default period:",
-      defaultPeriod,
-    );
 
     if (!timeStr) {
       console.log("Profile - No time string provided, using defaults");
@@ -55,7 +49,6 @@ const Profile = () => {
 
     // Handle both formats: "HH:MM Period" and existing object format
     if (typeof timeStr === "object" && timeStr.hour) {
-      console.log("Profile - Time is in object format:", timeStr);
       return {
         hour: timeStr.hour.padStart(2, "0"),
         minute: timeStr.minute.padStart(2, "0"),
@@ -64,7 +57,6 @@ const Profile = () => {
     }
 
     // Handle string format "HH:MM Period"
-    console.log("Profile - Time is in string format:", timeStr);
     const [time, period] = timeStr.split(" ");
     const [hour, minute] = time.split(":");
     const result = {
@@ -72,7 +64,6 @@ const Profile = () => {
       minute: minute.padStart(2, "0"),
       period: defaultPeriod,
     };
-    console.log("Profile - Parsed time result:", result);
     return result;
   };
 
@@ -85,11 +76,6 @@ const Profile = () => {
 
       if (docSnap.exists()) {
         const data = docSnap.data();
-        console.log("Profile - Fetched user data:", data);
-        console.log(
-          "Profile - Skincare routine from DB:",
-          data.skincareRoutine,
-        );
 
         setUserData(data);
 
@@ -105,17 +91,6 @@ const Profile = () => {
             pm: parseTime(data.skincareRoutine?.pm, "PM"),
           },
         };
-
-        console.log("Profile - Setting form data:", formDataToSet);
-        console.log(
-          "Profile - Parsed AM time:",
-          formDataToSet.skincareRoutine.am,
-        );
-        console.log(
-          "Profile - Parsed PM time:",
-          formDataToSet.skincareRoutine.pm,
-        );
-
         setFormData(formDataToSet);
 
         // Initialize check-in status for today if needed
@@ -408,10 +383,6 @@ const Profile = () => {
                   />
                 ) : (
                   (() => {
-                    console.log(
-                      "Profile - Displaying AM time from userData:",
-                      userData?.skincareRoutine?.am,
-                    );
                     return (
                       `${userData?.skincareRoutine?.am}` || "Not specified"
                     );
@@ -433,10 +404,6 @@ const Profile = () => {
                   />
                 ) : (
                   (() => {
-                    console.log(
-                      "Profile - Displaying PM time from userData:",
-                      userData?.skincareRoutine?.pm,
-                    );
                     return (
                       `${userData?.skincareRoutine?.pm}` || "Not specified"
                     );

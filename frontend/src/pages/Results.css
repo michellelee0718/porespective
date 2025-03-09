@@ -293,9 +293,9 @@
 
 /* Dark mode overrides for Results page */
 .dark-mode .ingredient-list {
-  background-color: #333;
-  color: #eee;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  background-color: #2a2a2a;
+  color: #ffffff;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
 }
 
 .dark-mode .recommendation-box,
@@ -345,7 +345,96 @@
 }
 
 .dark-mode .ingredient-item {
-  border-color: #555;
+  border-color: #444;
+}
+
+.dark-mode .ingredient-info span:first-child {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.dark-mode .score-1 {
+  background-color: rgba(46, 125, 50, 0.3);
+  color: #81c784;
+  border: 1px solid #81c784;
+}
+
+.dark-mode .score-2,
+.dark-mode .score-3 {
+  background-color: rgba(255, 143, 0, 0.3);
+  color: #ffb74d;
+  border: 1px solid #ffb74d;
+}
+
+.dark-mode .score-4,
+.dark-mode .score-5,
+.dark-mode .score-6 {
+  background-color: rgba(198, 40, 40, 0.3);
+  color: #e57373;
+  border: 1px solid #e57373;
+}
+
+.dark-mode .score-7,
+.dark-mode .score-8,
+.dark-mode .score-9,
+.dark-mode .score-10 {
+  background-color: rgba(183, 28, 28, 0.3);
+  color: #ef5350;
+  border: 1px solid #ef5350;
+}
+
+.dark-mode .accordion-btn {
+  background-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-mode .accordion-btn:hover {
+  background-color: #555;
+}
+
+.dark-mode .accordion-btn.active {
+  background-color: #0277bd;
+  color: #ffffff;
+}
+
+.dark-mode .concerns-panel {
+  background-color: #333;
+}
+
+.dark-mode .concerns-panel.expanded {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .concern-item {
+  color: #e0e0e0;
+}
+
+.dark-mode .concern-item:before {
+  color: #ff7043;
+}
+
+.dark-mode .high-risk {
+  background-color: rgba(183, 28, 28, 0.2);
+  border: 1px solid rgba(239, 83, 80, 0.3);
+}
+
+.dark-mode .summary-button {
+  background-color: #7e57c2;
+}
+
+.dark-mode .summary-button:hover {
+  background-color: #673ab7;
+}
+
+.dark-mode .ingredient-summary {
+  background-color: #424242;
+  color: #ffffff;
+}
+
+.dark-mode .summary-item {
+  background-color: #333;
+  color: #90caf9;
+  border: 1px solid #42a5f5;
 }
 
 .concerns-list {

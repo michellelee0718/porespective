@@ -99,6 +99,8 @@ function Login({ setIsAuth }) {
             amCompleted: false,
             pmCompleted: false,
           },
+          amNotification: false,
+          pmNotification: false,
         };
         await setDoc(userRef, userData);
         localStorage.setItem("isAuth", "true");

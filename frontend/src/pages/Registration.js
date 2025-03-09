@@ -48,6 +48,8 @@ function Registration() {
           amCompleted: false,
           pmCompleted: false,
         },
+        amNotification: false,
+        pmNotification: false,
       });
 
       // Navigate to profile creation

@@ -83,6 +83,38 @@ def test_recommend_product_with_session_id(client, mocker):
     assert 'data: {"content": "Session ID test passed."}' in response_data
 
 
+def test_recommend_product_missing_user_profile(client, mocker):
+    """
+    Test that missing user profile will not raise an error
+    """
+    mock_stream = mocker.MagicMock()
+    mock_stream.return_value = iter(
+        [
+            'data: {"content": "Enter the user profile for customized recommendation."}\n\n'
+        ]
+    )
+
+    mocker.patch("backend.server.stream_recommend", mock_stream)
+
+    request_json = {
+        "product_name": "Product A",
+        "ingredients": [
+            {"name": "Ingredient 1", "score": 1, "concerns": ["Concern X"]},
+            {"name": "Ingredient 2", "score": 2, "concerns": ["Concern Y"]},
+        ],
+        "session_id": "test_session_123",
+    }
+
+    response = client.post("/recommend", json=request_json)
+    assert response.status_code == 200
+    response_data = "".join([line.decode() for line in response.response])
+
+    assert (
+        'data: {"content": "Enter the user profile for customized recommendation."}'
+        in response_data
+    )
+
+
 def test_recommend_product_missing_score(client):
     """
     Test /recommend error if an ingredient is missing a score.

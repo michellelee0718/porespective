@@ -6,7 +6,9 @@ Find your next favorite skincare product with **Porespective**.
 
 - User-Authentication and Google Login
 - Product Search for Detailed Ingredient Information
+- AI Summarization of Ingredient Keywords
 - Personalized AI Recommendation for the Product
+- Email and In App Notification on Skincare Routines
 
 ## 💫 What is it?
 
@@ -58,7 +60,7 @@ LLM_TEMPERATURE=0.0 # Controls the randomness of a model's output. Lower values 
 ## Tests
 
 Frontend tests:
-https://github.com/michellelee0718/porespective/tree/main/src/tests
+https://github.com/michellelee0718/porespective/tree/main/frontend/src/tests
 
 Backend tests:
 https://github.com/michellelee0718/porespective/tree/main/backend/tests

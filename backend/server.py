@@ -348,7 +348,11 @@ def recommend_product():
     if not product_name:
         return jsonify({"error": "Missing product_name"}), 400
     if not user_profile:
-        return jsonify({"error": "Missing user profile"}), 400
+        user_profile = {
+            "skinType": "Unknown",
+            "skinConcerns": None,
+            "allergies": None,
+        }  # Do not return error to ensure that the chatbox works for non user-login case.
 
     try:
         ingredient_details = get_formatted_ingredients(data)

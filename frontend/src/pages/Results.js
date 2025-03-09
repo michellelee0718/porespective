@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import "./Results.css";
 import { doc, getDoc } from "firebase/firestore";
@@ -21,10 +21,6 @@ const Results = () => {
   const [expandedConcerns, setExpandedConcerns] = useState({});
   const [ingredientSummary, setIngredientSummary] = useState([]); // Store as an array
   const [isSummaryLoading, setIsSummaryLoading] = useState(false); // Loading state for summary
-
-  useEffect(() => {
-    fetchIngredientSummary();
-  }, []);
 
   const fetchIngredientSummary = async () => {
     const cacheKey = JSON.stringify(ingredients); // Unique key based on ingredients
@@ -350,6 +346,10 @@ const Results = () => {
           </li>
         ))}
       </ul>
+
+      <button className="summary-button" onClick={fetchIngredientSummary}>
+        Get Ingredient Summary
+      </button>
 
       {/* AI Summary Section */}
       {isSummaryLoading ? (

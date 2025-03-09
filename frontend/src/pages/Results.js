@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import "./Results.css";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase-config";
 
 const Results = () => {
   const location = useLocation();
@@ -16,8 +18,32 @@ const Results = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [userMessage, setUserMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const [expandedConcerns, setExpandedConcerns] = useState({});
 
   const fetchRecommendation = async () => {
+    console.log("Fetching user profile...");
+    let userProfile = {};
+
+    if (auth.currentUser) {
+      try {
+        const userRef = doc(db, "users", auth.currentUser.uid);
+        const docSnap = await getDoc(userRef);
+
+        if (docSnap.exists()) {
+          userProfile = docSnap.data();
+          console.log("Retrieved user profile from Firestore:", userProfile);
+        } else {
+          console.warn("User profile not found in Firestore.");
+        }
+      } catch (error) {
+        console.error("Error fetching user profile from Firestore:", error);
+      }
+    } else {
+      console.warn("No authenticated user found.");
+    }
+
+    console.log("Final User Profile sent to backend:", userProfile);
+
     console.log("Fetching recommendation...");
     setIsLoading(true);
     try {
@@ -31,6 +57,7 @@ const Results = () => {
         body: JSON.stringify({
           product_name: productName,
           ingredients: ingredients,
+          user_profile: userProfile,
         }),
       });
 
@@ -251,7 +278,35 @@ const Results = () => {
       <ul className="ingredient-list">
         {ingredients.map((item, index) => (
           <li key={index} className={`ingredient-item score-${item.score}`}>
-            {item.name} - <strong>Score: {parseInt(item.score, 10)}</strong>
+            <div className="ingredient-header">
+              {item.name} - <strong>Score: {parseInt(item.score, 10)}</strong>
+              {item.concerns && item.concerns.length > 0 && (
+                <button
+                  className="toggle-concerns"
+                  onClick={() =>
+                    setExpandedConcerns((prevState) => ({
+                      ...prevState,
+                      [index]: !prevState[index],
+                    }))
+                  }
+                >
+                  {expandedConcerns[index]
+                    ? "▼ Hide Concerns"
+                    : "▶ Show Concerns"}
+                </button>
+              )}
+            </div>
+
+            {/* Conditionally show concerns when expanded */}
+            {expandedConcerns[index] && item.concerns.length > 0 && (
+              <ul className="concerns-list">
+                {item.concerns.map((concern, idx) => (
+                  <li key={idx} className="concern-item">
+                    {concern}
+                  </li>
+                ))}
+              </ul>
+            )}
           </li>
         ))}
       </ul>

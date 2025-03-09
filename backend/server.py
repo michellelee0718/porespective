@@ -191,19 +191,54 @@ def recommend_product():
     product_name = data.get("product_name")
     ingredients = data.get("ingredients")
     session_id = data.get("session_id")
+    user_profile = data.get(
+        "user_profile"
+    )  # Get user profile information for customized recommendation
 
     if not product_name:
         return jsonify({"error": "Missing product_name"}), 400
-    if not ingredients or not isinstance(ingredients, list):
-        return jsonify({"error": "Missing or invalid ingredients"}), 400
+    if not ingredients:
+        return jsonify({"error": "Missing ingredients"}), 400
+    if not isinstance(ingredients, list):
+        return jsonify({"error": "Invalid ingredients (Should be a list)"}), 400
+    if not user_profile:
+        return jsonify({"error": "Missing user profile"}), 400
+
+    for i in ingredients:
+        if "name" not in i:
+            return jsonify({"error": "Ingredient missing 'name' field"}), 400
+        if "score" not in i:
+            return (
+                jsonify({"error": f"Ingredient '{i['name']}' missing 'score' field"}),
+                400,
+            )
+        if "concerns" not in i or not isinstance(i["concerns"], list):
+            return (
+                jsonify(
+                    {
+                        "error": f"Ingredient '{i['name']}' missing 'concerns' field or the 'concern' field is not a list"
+                    }
+                ),
+                400,
+            )
 
     # If client didn't provide a session_id, generate one automatically
     if not session_id:
         session_id = generate_session_id()
 
-    # Format the ingredients for the LLM
+    profile_details = (
+        f"User Profile:\n"
+        f"- Skin Type: {user_profile.get('skinType', 'Unknown')}\n"
+        f"- Skin Concerns: {user_profile.get('skinConcerns', 'None')}\n"
+        f"- Allergies: {user_profile.get('allergies', 'None')}\n"
+    )
+
+    # Format the ingredients for the LLM with error handling
     ingredient_details = "\n".join(
-        [f"{i['name']} (Hazard Score: {i['score']})" for i in ingredients]
+        [
+            f"{i['name']} (Hazard Score: {i['score']})\n  - Concerns: {', '.join(i['concerns']) if i['concerns'] else 'None'}"
+            for i in ingredients
+        ]
     )
 
     # Explain hazard ratings to the LLM
@@ -211,11 +246,11 @@ def recommend_product():
         "The hazard score represents the potential risk level of the ingredient. "
         "A lower score (1-2) means it's considered low risk, 3-6 indicates moderate risk, "
         "and 7-10 suggests a higher hazard potential. "
-        "Please analyze the safety of the product based on these scores. "
+        "Please analyze the safety of the product based on these scores along with the concerns for the ingredients. "
+        "In addition, use user's skin type, skin concerns, and allergies while making recommendations."
     )
 
-    llm_input = f"Product Name: {product_name}\nIngredients:\n{ingredient_details}\n\n{explanation}"
-
+    llm_input = f"Product Name: {product_name}\nIngredients:\n{ingredient_details}\n\n{profile_details}\n\n{explanation}"
     return Response(
         stream_with_context(stream_recommend(llm_input, session_id)),
         mimetype="text/event-stream",

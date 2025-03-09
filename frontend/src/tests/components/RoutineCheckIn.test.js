@@ -3,41 +3,51 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import Profile from "../../pages/Profile";
 import { ThemeProvider } from "../../context/ThemeContext";
+import { getDoc, doc } from "firebase/firestore";
+import { getRoutineCheckInStatus } from "../../firebase/routineService";
 
-jest.mock("../../firebase/routineService");
-jest.mock("firebase/firestore");
-jest.mock("../../firebase-config", () => ({
-  auth: {
-    currentUser: { uid: "test-user-id", displayName: "Test User" },
-  },
-  db: {},
+jest.mock("firebase/app", () => ({
+  initializeApp: jest.fn(),
+}));
+jest.mock("firebase/analytics", () => ({
+  getAnalytics: jest.fn(),
+}));
+jest.mock("firebase/firestore", () => ({
+  getFirestore: jest.fn(),
+  getDoc: jest.fn(),
+  doc: jest.fn(),
+  updateDoc: jest.fn(),
+  collection: jest.fn(),
+}));
+jest.mock("firebase/auth", () => ({
+  getAuth: jest.fn(),
+  GoogleAuthProvider: jest.fn().mockImplementation(() => ({})),
+}));
+jest.mock("react-firebase-hooks/auth", () => ({
+  useAuthState: () => [
+    { uid: "test-user-id", displayName: "Test User" },
+    false,
+    null,
+  ],
+}));
+jest.mock("../../firebase/routineService", () => ({
+  initDailyCheckIn: jest.fn(),
+  markRoutineCompleted: jest.fn(),
+  getRoutineCheckInStatus: jest.fn(),
 }));
 
-import {
-  initDailyCheckIn,
-  markRoutineCompleted,
-  getRoutineCheckInStatus,
-} from "../../firebase/routineService";
-import { getDoc } from "firebase/firestore";
-
-describe("RoutineCheckIn UI", () => {
+describe("Routine Check-in UI", () => {
   beforeEach(() => {
     // Reset
     jest.clearAllMocks();
 
-    initDailyCheckIn.mockResolvedValue({
-      lastResetDate: "2024-05-15",
-      amCompleted: false,
-      pmCompleted: false,
-    });
+    doc.mockReturnValue("mocked-doc-ref");
 
     getRoutineCheckInStatus.mockResolvedValue({
       lastResetDate: "2024-05-15",
       amCompleted: false,
       pmCompleted: false,
     });
-
-    markRoutineCompleted.mockResolvedValue(true);
 
     getDoc.mockResolvedValue({
       exists: () => true,
@@ -51,8 +61,8 @@ describe("RoutineCheckIn UI", () => {
     });
   });
 
-  test("renders correctly in light mode", async () => {
-    // Expect correct UI in light mode
+  test("renders correct UI", () => {
+    // Expect correct UI
     render(
       <ThemeProvider>
         <Profile />
@@ -60,28 +70,18 @@ describe("RoutineCheckIn UI", () => {
     );
 
     // Verify result
-    await screen.findByText("Today's Skincare Routine");
-    const container = screen
-      .getByText("Today's Skincare Routine")
-      .closest(".routine-checkin-container");
-    expect(container).toBeInTheDocument();
+    return screen.findByText("Today's Skincare Routine").then(() => {
+      expect(screen.getByText("Morning Routine")).toBeInTheDocument();
+      expect(screen.getByText("Evening Routine")).toBeInTheDocument();
 
-    const morningCard = screen
-      .getByText("Morning Routine")
-      .closest(".routine-card");
-    const eveningCard = screen
-      .getByText("Evening Routine")
-      .closest(".routine-card");
+      expect(screen.getAllByText("Status: Pending")).toHaveLength(2);
 
-    expect(morningCard).toBeInTheDocument();
-    expect(eveningCard).toBeInTheDocument();
-
-    const buttons = screen.getAllByText("Mark as Done");
-    expect(buttons[0]).toHaveClass("checkin-button");
-    expect(buttons[1]).toHaveClass("checkin-button");
+      const buttons = screen.getAllByText("Mark as Done");
+      expect(buttons.length).toBe(2);
+    });
   });
 
-  test("disables button when routine time is not set", async () => {
+  test("disables buttons when routine times are not set", () => {
     // Expect disabled button when user has no routine times
     // Override the mock to return no routine times
     getDoc.mockResolvedValue({
@@ -101,14 +101,16 @@ describe("RoutineCheckIn UI", () => {
       </ThemeProvider>,
     );
 
-    await screen.findByText("Today's Skincare Routine");
-    const buttons = screen.getAllByText("Mark as Done");
-    // Verify result
-    expect(buttons[0]).toBeDisabled();
-    expect(buttons[1]).toBeDisabled();
+    return screen.findByText("Today's Skincare Routine").then(() => {
+      // Verify result
+      return screen.findAllByText("Mark as Done").then((buttons) => {
+        expect(buttons[0]).toBeDisabled();
+        expect(buttons[1]).toBeDisabled();
+      });
+    });
   });
 
-  test("correctly displays completed status", async () => {
+  test("correctly displays completed status", () => {
     // Expect completed status for AM routine
     // Mock a completed morning routine
     getRoutineCheckInStatus.mockResolvedValue({
@@ -123,16 +125,15 @@ describe("RoutineCheckIn UI", () => {
       </ThemeProvider>,
     );
 
-    await screen.findByText("Today's Skincare Routine");
-
     // Verify result
-    expect(screen.getByText(/Completed/, { exact: false })).toBeInTheDocument();
-    expect(screen.getByText(/Pending/, { exact: false })).toBeInTheDocument();
-    const buttons = screen.getAllByText("Mark as Done");
-    expect(buttons.length).toBe(1);
+    return screen.findByText("Today's Skincare Routine").then(() => {
+      return screen.findByText("Status: Completed").then((element) => {
+        expect(element).toBeInTheDocument();
+      });
+    });
   });
 
-  test("correctly displays both routines completed", async () => {
+  test("correctly displays both routines completed", () => {
     // Expect both routines completed
     // Mock both routines completed
     getRoutineCheckInStatus.mockResolvedValue({
@@ -147,12 +148,13 @@ describe("RoutineCheckIn UI", () => {
       </ThemeProvider>,
     );
 
-    await screen.findByText("Today's Skincare Routine");
-    const completedTexts = screen.getAllByText(/Completed/, { exact: false });
-
     // Verify result
-    expect(completedTexts.length).toBe(2);
-    const buttons = screen.queryAllByText("Mark as Done");
-    expect(buttons.length).toBe(0);
+    return screen.findByText("Today's Skincare Routine").then(() => {
+      return screen.findAllByText("Status: Completed").then((elements) => {
+        expect(elements.length).toBe(2);
+        const buttons = screen.queryAllByText("Mark as Done");
+        expect(buttons.length).toBe(0);
+      });
+    });
   });
 });

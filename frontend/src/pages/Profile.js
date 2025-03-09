@@ -41,7 +41,6 @@ const Profile = () => {
 
   // Parse existing time strings into hour, minute, period format
   const parseTime = (timeStr, defaultPeriod) => {
-
     if (!timeStr) {
       console.log("Profile - No time string provided, using defaults");
       return { hour: "06", minute: "00", period: defaultPeriod };

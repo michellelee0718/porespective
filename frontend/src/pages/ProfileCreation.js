@@ -15,8 +15,8 @@ function ProfileCreation() {
     skinConcerns: "",
     allergies: "",
     skincareRoutine: {
-      am: { hour: "6", minute: "00", period: "AM" },
-      pm: { hour: "6", minute: "00", period: "PM" },
+      am: { hour: "1", minute: "00", period: "AM" },
+      pm: { hour: "1", minute: "00", period: "PM" },
     },
   });
 
@@ -85,10 +85,21 @@ function ProfileCreation() {
         const formattedData = {
           ...formData,
           skincareRoutine: {
-            am: `${formData.skincareRoutine.am.hour}:${formData.skincareRoutine.am.minute}`,
-            pm: `${formData.skincareRoutine.pm.hour}:${formData.skincareRoutine.pm.minute}`,
+            am: `${formData.skincareRoutine.am.hour}:${formData.skincareRoutine.am.minute} ${formData.skincareRoutine.am.period}`,
+            pm: `${formData.skincareRoutine.pm.hour}:${formData.skincareRoutine.pm.minute} ${formData.skincareRoutine.pm.period}`,
           },
         };
+
+        console.log("ProfileCreation - Saving data:", formattedData);
+        console.log(
+          "ProfileCreation - AM time:",
+          formattedData.skincareRoutine.am,
+        );
+        console.log(
+          "ProfileCreation - PM time:",
+          formattedData.skincareRoutine.pm,
+        );
+
         await updateDoc(userRef, formattedData);
         setEditing(false);
         navigate("/profile");

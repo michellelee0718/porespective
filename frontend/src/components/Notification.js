@@ -85,7 +85,9 @@ export const scheduleNotifications = async () => {
   if (hours > 12) {
     hours = hours - 12;
     const pmTime =
-      hours.toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0");
+      hours.toString().padStart(2, "0") +
+      ":" +
+      now.getMinutes().toString().padStart(2, "0");
     if (pmTime === pm && !pmCompleted && !pmNotification) {
       await updateDoc(userRef, {
         [`pmNotification`]: true,

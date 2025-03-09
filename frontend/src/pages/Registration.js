@@ -48,7 +48,7 @@ function Registration() {
           amCompleted: false,
           pmCompleted: false,
         },
-        amNotification: false, 
+        amNotification: false,
         pmNotification: false,
       });
 

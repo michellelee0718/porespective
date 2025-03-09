@@ -99,7 +99,7 @@ function Login({ setIsAuth }) {
             amCompleted: false,
             pmCompleted: false,
           },
-          amNotification: false, 
+          amNotification: false,
           pmNotification: false,
         };
         await setDoc(userRef, userData);

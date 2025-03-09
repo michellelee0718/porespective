@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import { auth, db } from "../firebase-config";
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { getTodayDateString } from "../firebase/routineService";
 import "./Login.css";
-import { FcGoogle } from 'react-icons/fc';
+import { FcGoogle } from "react-icons/fc";
 
 function Login({ setIsAuth }) {
   const [email, setEmail] = useState("");
@@ -41,27 +45,31 @@ function Login({ setIsAuth }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-    
+
     try {
       const trimmedEmail = email.trim().toLowerCase();
       console.log("Attempting login for email:", trimmedEmail);
-      const userCredential = await signInWithEmailAndPassword(auth, trimmedEmail, password.trim());
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        trimmedEmail,
+        password.trim(),
+      );
       console.log("Login successful, user:", userCredential.user);
       await handleLoginSuccess(userCredential.user);
     } catch (error) {
       console.error("Login error details:", {
         code: error.code,
         message: error.message,
-        fullError: error
+        fullError: error,
       });
-      
-      if (error.code === 'auth/user-not-found') {
+
+      if (error.code === "auth/user-not-found") {
         setError("User not found");
-      } else if (error.code === 'auth/wrong-password') {
+      } else if (error.code === "auth/wrong-password") {
         setError("Invalid password");
-      } else if (error.code === 'auth/invalid-login-credentials') {
+      } else if (error.code === "auth/invalid-login-credentials") {
         setError("Invalid email or password");
-      } else if (error.code === 'auth/invalid-email') {
+      } else if (error.code === "auth/invalid-email") {
         setError("Invalid email format");
       } else {
         setError(`Login error: ${error.message}`);
@@ -82,9 +90,9 @@ function Login({ setIsAuth }) {
           fullName: user.displayName || "",
           email: user.email || "",
           createdAt: new Date(),
-          skincareRoutine: { 
+          skincareRoutine: {
             am: { hour: "6", minute: "00", period: "AM" },
-            pm: { hour: "6", minute: "00", period: "PM" }
+            pm: { hour: "6", minute: "00", period: "PM" },
           },
           routineCheckIn: {
             lastResetDate: getTodayDateString(),
@@ -152,10 +160,18 @@ function Login({ setIsAuth }) {
           <button type="submit" className="login-btn">
             Login
           </button>
-          <button type="button" className="register-btn" onClick={navigateToRegistration}>
+          <button
+            type="button"
+            className="register-btn"
+            onClick={navigateToRegistration}
+          >
             Register
           </button>
-          <button type="button" className="google-btn" onClick={signInWithGoogle}>
+          <button
+            type="button"
+            className="google-btn"
+            onClick={signInWithGoogle}
+          >
             <FcGoogle size={20} /> Sign in with Google
           </button>
         </div>

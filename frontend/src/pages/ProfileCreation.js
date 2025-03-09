@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase-config";
 import { doc, updateDoc } from "firebase/firestore";
 import "./ProfileCreation.css";
@@ -14,42 +14,46 @@ function ProfileCreation() {
     skinType: "",
     skinConcerns: "",
     allergies: "",
-    skincareRoutine: { 
+    skincareRoutine: {
       am: { hour: "6", minute: "00", period: "AM" },
-      pm: { hour: "6", minute: "00", period: "PM" }
-    }
+      pm: { hour: "6", minute: "00", period: "PM" },
+    },
   });
 
   // Generate time options
-  const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
-  const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
+  const hours = Array.from({ length: 12 }, (_, i) =>
+    (i + 1).toString().padStart(2, "0"),
+  );
+  const minutes = Array.from({ length: 60 }, (_, i) =>
+    i.toString().padStart(2, "0"),
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.startsWith('am') || name.startsWith('pm')) {
-      const [routine, timeComponent] = name.split('_');
-      setFormData(prev => ({
+    if (name.startsWith("am") || name.startsWith("pm")) {
+      const [routine, timeComponent] = name.split("_");
+      setFormData((prev) => ({
         ...prev,
         skincareRoutine: {
           ...prev.skincareRoutine,
           [routine]: {
             ...prev.skincareRoutine[routine],
             [timeComponent]: value,
-            period: routine.toUpperCase() // Ensure period stays fixed
-          }
-        }
+            period: routine.toUpperCase(), // Ensure period stays fixed
+          },
+        },
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: value
+        [name]: value,
       }));
     }
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ""
+        [name]: "",
       }));
     }
   };
@@ -59,9 +63,11 @@ function ProfileCreation() {
     if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
     if (!formData.gender) newErrors.gender = "Please select a gender";
     if (!formData.skinType) newErrors.skinType = "Please select a skin type";
-    if (!formData.skinConcerns.trim()) newErrors.skinConcerns = "Skin concerns are required";
-    if (!formData.allergies.trim()) newErrors.allergies = "Please specify allergies or write 'None'";
-    
+    if (!formData.skinConcerns.trim())
+      newErrors.skinConcerns = "Skin concerns are required";
+    if (!formData.allergies.trim())
+      newErrors.allergies = "Please specify allergies or write 'None'";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -80,8 +86,8 @@ function ProfileCreation() {
           ...formData,
           skincareRoutine: {
             am: `${formData.skincareRoutine.am.hour}:${formData.skincareRoutine.am.minute}`,
-            pm: `${formData.skincareRoutine.pm.hour}:${formData.skincareRoutine.pm.minute}`
-          }
+            pm: `${formData.skincareRoutine.pm.hour}:${formData.skincareRoutine.pm.minute}`,
+          },
         };
         await updateDoc(userRef, formattedData);
         setEditing(false);
@@ -100,8 +106,10 @@ function ProfileCreation() {
         onChange={onChange}
         disabled={disabled}
       >
-        {hours.map(hour => (
-          <option key={hour} value={hour}>{hour}</option>
+        {hours.map((hour) => (
+          <option key={hour} value={hour}>
+            {hour}
+          </option>
         ))}
       </select>
       <span>:</span>
@@ -111,8 +119,10 @@ function ProfileCreation() {
         onChange={onChange}
         disabled={disabled}
       >
-        {minutes.map(minute => (
-          <option key={minute} value={minute}>{minute}</option>
+        {minutes.map((minute) => (
+          <option key={minute} value={minute}>
+            {minute}
+          </option>
         ))}
       </select>
       <span>{prefix.toUpperCase()}</span>
@@ -135,7 +145,9 @@ function ProfileCreation() {
                 disabled={!editing}
                 required
               />
-              {errors.fullName && <span className="error-message">{errors.fullName}</span>}
+              {errors.fullName && (
+                <span className="error-message">{errors.fullName}</span>
+              )}
             </div>
 
             <div className="form-group">
@@ -153,7 +165,9 @@ function ProfileCreation() {
                 <option value="other">Other</option>
                 <option value="prefer-not-to-say">Prefer not to say</option>
               </select>
-              {errors.gender && <span className="error-message">{errors.gender}</span>}
+              {errors.gender && (
+                <span className="error-message">{errors.gender}</span>
+              )}
             </div>
 
             <div className="form-group">
@@ -172,7 +186,9 @@ function ProfileCreation() {
                 <option value="normal">Normal</option>
                 <option value="sensitive">Sensitive</option>
               </select>
-              {errors.skinType && <span className="error-message">{errors.skinType}</span>}
+              {errors.skinType && (
+                <span className="error-message">{errors.skinType}</span>
+              )}
             </div>
 
             <div className="form-group">
@@ -184,7 +200,9 @@ function ProfileCreation() {
                 disabled={!editing}
                 placeholder="Enter your skin concerns..."
               />
-              {errors.skinConcerns && <span className="error-message">{errors.skinConcerns}</span>}
+              {errors.skinConcerns && (
+                <span className="error-message">{errors.skinConcerns}</span>
+              )}
             </div>
           </div>
 
@@ -198,7 +216,9 @@ function ProfileCreation() {
                 disabled={!editing}
                 placeholder="Enter any allergies or sensitivities..."
               />
-              {errors.allergies && <span className="error-message">{errors.allergies}</span>}
+              {errors.allergies && (
+                <span className="error-message">{errors.allergies}</span>
+              )}
             </div>
 
             <div className="form-group">
@@ -239,4 +259,4 @@ function ProfileCreation() {
   );
 }
 
-export default ProfileCreation; 
+export default ProfileCreation;

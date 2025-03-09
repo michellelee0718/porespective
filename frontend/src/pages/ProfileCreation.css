@@ -171,7 +171,7 @@
   .form-columns {
     grid-template-columns: 1fr;
   }
-  
+
   .button-group {
     width: 100%;
   }
@@ -220,4 +220,4 @@
 
 :global(.dark-mode) .time-selector span {
   color: #ffeff6;
-} 
+}

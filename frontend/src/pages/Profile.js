@@ -19,8 +19,12 @@ const Profile = () => {
   });
 
   // Generate time options
-  const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
-  const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
+  const hours = Array.from({ length: 12 }, (_, i) =>
+    (i + 1).toString().padStart(2, "0"),
+  );
+  const minutes = Array.from({ length: 60 }, (_, i) =>
+    i.toString().padStart(2, "0"),
+  );
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -30,7 +34,7 @@ const Profile = () => {
     allergies: "",
     skincareRoutine: {
       am: { hour: "6", minute: "00", period: "AM" },
-      pm: { hour: "6", minute: "00", period: "PM" }
+      pm: { hour: "6", minute: "00", period: "PM" },
     },
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -54,7 +58,7 @@ const Profile = () => {
           return {
             hour: hour.padStart(2, "0"),
             minute: minute.padStart(2, "0"),
-            period: timeStr.includes("PM") ? "PM" : "AM"
+            period: timeStr.includes("PM") ? "PM" : "AM",
           };
         };
 
@@ -66,7 +70,7 @@ const Profile = () => {
           allergies: data.allergies || "",
           skincareRoutine: {
             am: parseTime(data.skincareRoutine?.am),
-            pm: parseTime(data.skincareRoutine?.pm)
+            pm: parseTime(data.skincareRoutine?.pm),
           },
         });
 
@@ -88,7 +92,7 @@ const Profile = () => {
           allergies: "",
           skincareRoutine: {
             am: { hour: "06", minute: "00", period: "AM" },
-            pm: { hour: "06", minute: "00", period: "PM" }
+            pm: { hour: "06", minute: "00", period: "PM" },
           },
         });
 
@@ -125,21 +129,21 @@ const Profile = () => {
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.startsWith('am') || name.startsWith('pm')) {
-      const [routine, timeComponent] = name.split('_');
-      setFormData(prev => ({
+    if (name.startsWith("am") || name.startsWith("pm")) {
+      const [routine, timeComponent] = name.split("_");
+      setFormData((prev) => ({
         ...prev,
         skincareRoutine: {
           ...prev.skincareRoutine,
           [routine]: {
             ...prev.skincareRoutine[routine],
             [timeComponent]: value,
-            period: routine.toUpperCase() // Ensure period stays fixed
-          }
-        }
+            period: routine.toUpperCase(), // Ensure period stays fixed
+          },
+        },
       }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
@@ -157,15 +161,15 @@ const Profile = () => {
         ...formData,
         skincareRoutine: {
           am: `${formData.skincareRoutine.am.hour}:${formData.skincareRoutine.am.minute} ${formData.skincareRoutine.am.period}`,
-          pm: `${formData.skincareRoutine.pm.hour}:${formData.skincareRoutine.pm.minute} ${formData.skincareRoutine.pm.period}`
-        }
+          pm: `${formData.skincareRoutine.pm.hour}:${formData.skincareRoutine.pm.minute} ${formData.skincareRoutine.pm.period}`,
+        },
       };
 
       await updateDoc(userRef, formattedData);
 
       setUserData({
         ...userData,
-        ...formattedData
+        ...formattedData,
       });
 
       setIsSaving(false);
@@ -185,8 +189,10 @@ const Profile = () => {
         onChange={onChange}
         disabled={disabled}
       >
-        {hours.map(hour => (
-          <option key={hour} value={hour}>{hour}</option>
+        {hours.map((hour) => (
+          <option key={hour} value={hour}>
+            {hour}
+          </option>
         ))}
       </select>
       <span>:</span>
@@ -196,8 +202,10 @@ const Profile = () => {
         onChange={onChange}
         disabled={disabled}
       >
-        {minutes.map(minute => (
-          <option key={minute} value={minute}>{minute}</option>
+        {minutes.map((minute) => (
+          <option key={minute} value={minute}>
+            {minute}
+          </option>
         ))}
       </select>
       <span>{prefix.toUpperCase()}</span>

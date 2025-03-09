@@ -37,8 +37,12 @@ function AppContent() {
           const userData = {
             fullName: user.displayName || "",
             email: user.email || "",
-            displayName: user.displayName || user.email.split('@')[0],
-            photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email.split('@')[0])}&background=ae7e7e&color=fff`,
+            displayName: user.displayName || user.email.split("@")[0],
+            photoURL:
+              user.photoURL ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                user.displayName || user.email.split("@")[0],
+              )}&background=ae7e7e&color=fff`,
             createdAt: new Date(),
             skincareRoutine: { am: "", pm: "" },
           };
@@ -92,14 +96,21 @@ function AppContent() {
                 ) : (
                   <div className="user-menu">
                     <div className="user-top">
-                      <div>{user.displayName || user.email.split('@')[0]}</div>
+                      <div>{user.displayName || user.email.split("@")[0]}</div>
                       <img
-                        src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email.split('@')[0])}&background=ae7e7e&color=fff`}
+                        src={
+                          user.photoURL ||
+                          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            user.displayName || user.email.split("@")[0],
+                          )}&background=ae7e7e&color=fff`
+                        }
                         height="30px"
                         width="30px"
                         alt=""
                         onError={(e) => {
-                          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email.split('@')[0])}&background=ae7e7e&color=fff`;
+                          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            user.displayName || user.email.split("@")[0],
+                          )}&background=ae7e7e&color=fff`;
                         }}
                       />
                       <Link to="/profile"> profile </Link>

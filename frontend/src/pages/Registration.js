@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { auth, db } from "../firebase-config";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
@@ -18,13 +18,19 @@ function Registration() {
 
     try {
       // Create user in Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
       const user = userCredential.user;
 
       // Set display name and default photo URL
       await updateProfile(user, {
         displayName: username,
-        photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=ae7e7e&color=fff`
+        photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          username,
+        )}&background=ae7e7e&color=fff`,
       });
 
       // Create user document in Firestore
@@ -32,25 +38,27 @@ function Registration() {
         username: username,
         email: email,
         displayName: username,
-        photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=ae7e7e&color=fff`,
+        photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          username,
+        )}&background=ae7e7e&color=fff`,
         createdAt: new Date(),
         skincareRoutine: { am: "", pm: "" },
         routineCheckIn: {
-          lastResetDate: new Date().toISOString().split('T')[0],
+          lastResetDate: new Date().toISOString().split("T")[0],
           amCompleted: false,
           pmCompleted: false,
-        }
+        },
       });
 
       // Navigate to profile creation
       navigate("/profile-creation");
     } catch (error) {
       console.error("Registration error:", error);
-      if (error.code === 'auth/email-already-in-use') {
+      if (error.code === "auth/email-already-in-use") {
         setError("Email is already registered");
-      } else if (error.code === 'auth/invalid-email') {
+      } else if (error.code === "auth/invalid-email") {
         setError("Invalid email format");
-      } else if (error.code === 'auth/weak-password') {
+      } else if (error.code === "auth/weak-password") {
         setError("Password should be at least 6 characters");
       } else {
         setError("An error occurred during registration");
@@ -98,4 +106,4 @@ function Registration() {
   );
 }
 
-export default Registration; 
+export default Registration;

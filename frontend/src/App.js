@@ -55,7 +55,8 @@ function AppContent() {
         initDailyCheckIn();
 
         // Schedule notifications
-        scheduleNotifications();
+        const resetInterval = setInterval(scheduleNotifications, 30000);
+        return () => clearInterval(resetInterval);
       };
 
       ensureUserDocument();

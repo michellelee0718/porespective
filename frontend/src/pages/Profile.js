@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { auth, db } from "../firebase-config";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { resetNotifications } from "../components/Notification";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { resetNotifications } from "../components/Notification";
 import {
   initDailyCheckIn,
   markRoutineCompleted,
@@ -151,14 +149,6 @@ const Profile = () => {
 
   // Save data to Firestore
   const handleSave = async () => {
-    const regex = /^(1[0-2]|0?[1-9]):[0-5][0-9]$/;
-    if (
-      !regex.test(formData.skincareRoutine.am) ||
-      !regex.test(formData.skincareRoutine.pm)
-    ) {
-      alert("Please input a valid time in HH/MM format");
-      return;
-    }
 
     try {
       setIsSaving(true);
@@ -175,6 +165,15 @@ const Profile = () => {
           pm: `${formData.skincareRoutine.pm.hour}:${formData.skincareRoutine.pm.minute} ${formData.skincareRoutine.pm.period}`,
         },
       };
+
+    const regex = /^(1[0-2]|0?[1-9]):[0-5][0-9] (AM|PM)$/;
+    if (
+      !regex.test(formattedData.skincareRoutine.am) ||
+      !regex.test(formattedData.skincareRoutine.pm)
+    ) {
+      alert("Please input a valid time in HH/MM format");
+      return;
+    }
 
       await updateDoc(userRef, formattedData);
 

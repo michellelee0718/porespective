@@ -58,13 +58,20 @@ export const scheduleNotifications = async () => {
   if (!auth.currentUser) return;
   const userRef = doc(db, "users", auth.currentUser.uid);
   const docSnap = await getDoc(userRef);
-  if (!docSnap.exists()) return;
 
   const userData = docSnap.data();
+  if (!userData.amNotification && !userData.pmNotification) {
+    const notifications = {
+      amNotification: false,
+      pmNotification: false,
+    };
+    await updateDoc(userRef, notifications);
+  }
+
   if (!userData) return;
 
-  const am = userData.skincareRoutine.am;
-  const pm = userData.skincareRoutine.pm;
+  const am = userData.skincareRoutine.am.split(" ")[0];
+  const pm = userData.skincareRoutine.pm.split(" ")[0];
   const amCompleted = userData.routineCheckIn.amCompleted;
   const pmCompleted = userData.routineCheckIn.pmCompleted;
   let amNotification = userData.amNotification;
@@ -78,7 +85,7 @@ export const scheduleNotifications = async () => {
   if (hours > 12) {
     hours = hours - 12;
     const pmTime =
-      hours.toString() + ":" + now.getMinutes().toString().padStart(2, "0");
+      hours.toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0");
     if (pmTime === pm && !pmCompleted && !pmNotification) {
       await updateDoc(userRef, {
         [`pmNotification`]: true,
@@ -88,7 +95,7 @@ export const scheduleNotifications = async () => {
     }
   } else {
     const amTime =
-      now.getHours().toString() +
+      now.getHours().toString().padStart(2, "0") +
       ":" +
       now.getMinutes().toString().padStart(2, "0");
     if (amTime === am && !amCompleted && !amNotification) {

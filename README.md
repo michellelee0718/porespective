@@ -97,6 +97,7 @@ To run all the backend tests:
 │   ├── scraper.py
 │   ├── server.py
 │   ├── test.py
+│   ├── email.mjs
 │   ├── tests
 │   │   ├── __init__.py
 │   │   └── unit_tests
@@ -140,6 +141,7 @@ To run all the backend tests:
 │           ├── components
 │           │   ├── RoutineCheckIn.test.js
 │           │   └── ThemeToggle.test.js
+│           │   └── Notification.test.js
 │           ├── firebase
 │           │   └── RoutineService.test.js
 │           └── pages

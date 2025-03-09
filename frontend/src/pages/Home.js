@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { auth } from "../firebase-config";
-import { useAuthState } from "react-firebase-hooks/auth";
-import Form from "../components/search";
+import React, { useState } from "react"
+import { auth } from "../firebase-config"
+import { useAuthState } from "react-firebase-hooks/auth"
+import Form from "../components/search"
 
 function Home() {
-  const [searchKeyword, setSearchKeyword] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState("")
 
   return (
     <div className="homePage">
@@ -16,7 +16,7 @@ function Home() {
       <div className="search-bar">
         <Form
           placeHolder="Search for a product"
-          isSearching={(event) => setSearchKeyword(event.target.value)}
+          isSearching={event => setSearchKeyword(event.target.value)}
         />
       </div>
 
@@ -24,7 +24,7 @@ function Home() {
         <label>Featured Products:</label>
       </div> */}
     </div>
-  );
+  )
 }
 
-export default Home;
+export default Home

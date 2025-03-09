@@ -19,6 +19,56 @@ const Results = () => {
   const [userMessage, setUserMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [expandedConcerns, setExpandedConcerns] = useState({});
+  const [ingredientSummary, setIngredientSummary] = useState([]);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+
+  // Toggle expand/collapse state
+  const toggleConcerns = (index) => {
+    setExpandedConcerns((prevState) => ({
+      ...prevState,
+      [index]: !prevState[index],
+    }));
+  };
+
+  // Determine if a component is high risk
+  const isHighRisk = (score) => {
+    const numScore = parseInt(score, 10);
+    return numScore >= 7;
+  };
+
+  const fetchIngredientSummary = async () => {
+    const cacheKey = JSON.stringify(ingredients); // Unique key based on ingredients
+
+    // Check local storage cache
+    const cachedSummary = localStorage.getItem(cacheKey);
+    if (cachedSummary) {
+      setIngredientSummary(JSON.parse(cachedSummary));
+      return;
+    }
+
+    setIsSummaryLoading(true);
+    try {
+      const response = await fetch("http://127.0.0.1:5000/ingredient-summary", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ingredients }),
+      });
+
+      const data = await response.json();
+      if (Array.isArray(data.summary)) {
+        setIngredientSummary(data.summary);
+        localStorage.setItem(cacheKey, JSON.stringify(data.summary)); // Cache it
+      } else {
+        setIngredientSummary([]);
+      }
+    } catch (error) {
+      console.error("Error fetching ingredient summary:", error);
+      setIngredientSummary([]);
+    }
+    setIsSummaryLoading(false);
+  };
 
   const fetchRecommendation = async () => {
     console.log("Fetching user profile...");
@@ -275,41 +325,85 @@ const Results = () => {
       </h1>
 
       <h2 className="ingredient-title">Ingredient List</h2>
-      <ul className="ingredient-list">
+      <div className="ingredient-list">
         {ingredients.map((item, index) => (
-          <li key={index} className={`ingredient-item score-${item.score}`}>
+          <div
+            key={index}
+            className={`ingredient-item ${
+              isHighRisk(item.score) ? "high-risk" : ""
+            }`}
+          >
             <div className="ingredient-header">
-              {item.name} - <strong>Score: {parseInt(item.score, 10)}</strong>
+              <div className="ingredient-info">
+                <span>{item.name}</span>
+                <span
+                  className={`score-indicator score-${parseInt(
+                    item.score,
+                    10,
+                  )}`}
+                >
+                  Score: {parseInt(item.score, 10)}
+                </span>
+              </div>
+
               {item.concerns && item.concerns.length > 0 && (
                 <button
-                  className="toggle-concerns"
-                  onClick={() =>
-                    setExpandedConcerns((prevState) => ({
-                      ...prevState,
-                      [index]: !prevState[index],
-                    }))
-                  }
+                  className={`accordion-btn ${
+                    expandedConcerns[index] ? "active" : ""
+                  }`}
+                  onClick={() => toggleConcerns(index)}
                 >
-                  {expandedConcerns[index]
-                    ? "▼ Hide Concerns"
-                    : "▶ Show Concerns"}
+                  <span>
+                    {expandedConcerns[index]
+                      ? "Hide Concerns"
+                      : "Show Concerns"}
+                  </span>
+                  <span className="accordion-icon">▶</span>
                 </button>
               )}
             </div>
 
-            {/* Conditionally show concerns when expanded */}
-            {expandedConcerns[index] && item.concerns.length > 0 && (
-              <ul className="concerns-list">
-                {item.concerns.map((concern, idx) => (
-                  <li key={idx} className="concern-item">
-                    {concern}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
+            {/* Expandable concerns panel */}
+            <div
+              className={`concerns-panel ${
+                expandedConcerns[index] ? "expanded" : ""
+              }`}
+            >
+              {item.concerns && item.concerns.length > 0 && (
+                <ul className="concerns-list">
+                  {item.concerns.map((concern, idx) => (
+                    <li key={idx} className="concern-item">
+                      {concern}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
+
+      <button className="summary-button" onClick={fetchIngredientSummary}>
+        Get Ingredient Summary
+      </button>
+
+      {/* AI Summary Section */}
+      {isSummaryLoading ? (
+        <p>Loading AI Summary of Key Words...</p>
+      ) : (
+        ingredientSummary.length > 0 && (
+          <div className="ingredient-summary">
+            <h2>Key Words</h2>
+            <ul className="summary-list">
+              {ingredientSummary.map((word, index) => (
+                <li key={index} className="summary-item">
+                  {word}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      )}
 
       <button className="ask-ai-button" onClick={handleAskAI}>
         Ask AI for Recommendation

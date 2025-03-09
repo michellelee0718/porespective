@@ -1,9 +1,10 @@
+import hashlib
 import json
 
 from flask import Flask, Response, jsonify, request, stream_with_context
 from flask_cors import CORS
 
-from backend.model import get_llm
+from backend.model import get_ingredient_summary_chain, get_llm
 from backend.prompt import prompt_template_followup, prompt_template_recommendation
 from backend.scraper import scrape_product_ingredients
 from backend.utils import generate_session_id, get_or_create_conversation
@@ -23,6 +24,8 @@ CORS(
 )
 # Store of active conversations: {session_id -> conversation chain}
 conversation_store = {}
+# In-memory cache for AI-generated summaries
+ingredient_summary_cache = {}
 
 
 @app.route("/get_ingredients", methods=["GET"])
@@ -84,6 +87,152 @@ def get_ingredients():
     return jsonify(result)
 
 
+def get_formatted_ingredients(data: dict):
+    """
+    Format skincare ingredient details for AI processing.
+
+    Args:
+        data (dict): JSON input containing the following fields:
+            - ingredients (list of dicts): A list of ingredient objects, where each object includes:
+                - name (str): The name of the ingredient.
+                - score (int): The hazard score of the ingredient (1-10).
+                - concerns(str): The concerns of the ingredient.
+
+    Returns:
+        str: A formatted string where each ingredient is displayed with its name and hazard score.
+
+        Example:
+        ```
+        "Hyaluronic Acid (Hazard Score: 1)\nFragrance (Hazard Score: 8)\nSalicylic Acid (Hazard Score: 4)"
+        ```
+
+        OR
+
+        Response: A JSON error response if the input is invalid.
+
+    Raises:
+        ValueError: If input is missing or incorrectly formatted, or an ingredient is missing name, score, or concerns.
+        ```
+
+    Description:
+        This function validates and formats a list of skincare ingredients into a structured
+        string format.
+    """
+    ingredients = data.get("ingredients")
+
+    if not ingredients:
+        raise ValueError("Missing ingredients")
+    if not isinstance(ingredients, list):
+        raise ValueError("Invalid ingredients (Should be a list)")
+
+    for i in ingredients:
+        if "name" not in i:
+            raise ValueError("Ingredient missing 'name' field")
+        if "score" not in i:
+            raise ValueError(f"Ingredient '{i['name']}' missing 'score' field")
+        if "concerns" not in i or not isinstance(i["concerns"], list):
+            raise ValueError(
+                f"Ingredient '{i['name']}' missing 'concerns' field or the 'concern' field is not a list"
+            )
+
+    ingredient_details = "\n".join(
+        [f"{i['name']} (Hazard Score: {i['score']})" for i in ingredients]
+    )
+
+    return ingredient_details
+
+
+@app.route("/ingredient-summary", methods=["POST"])
+def ingredient_summary():
+    """
+    Generate an AI-powered summary of skincare ingredient benefits.
+
+    Args:
+        None: Expects a JSON input with the following field:
+            - ingredients (list of dicts): A list of ingredient objects, where each object contains:
+                - name (str): The name of the ingredient.
+                - score (int): The hazard score of the ingredient (1-10).
+                - concerns(str): The concerns of the ingredient.
+
+    Returns:
+        dict: A JSON object containing:
+            - summary (list of str): A list of up to 5 keywords summarizing the main skincare benefits of the ingredients.
+
+        Example Success Response:
+        ```json
+        {
+            "summary": ["Hydrating", "Soothing", "Brightening", "Antioxidant", "Exfoliating"]
+        }
+        ```
+
+        Example Empty Response (No valid ingredients):
+        ```json
+        {
+            "summary": []
+        }
+        ```
+
+    Errors:
+        - If `ingredients` is missing or is not a list:
+            ```json
+            { "error": "Invalid ingredients (Should be a list)" }, 400
+            ```
+        - If an internal server error occurs:
+            ```json
+            { "error": "Internal Server Error" }, 500
+            ```
+
+    Description:
+        This API endpoint receives a list of skincare ingredients and their hazard scores,
+        formats them into a structured text format, and then invokes a language model (LLM)
+        to generate a concise summary of key skincare benefits. The response is a list of up to
+        5 keywords highlighting the main properties of the ingredients.
+
+        The AI is prompted to return a **valid JSON list** containing only relevant benefits
+        such as **"Hydrating"**, **"Brightening"**, **"Exfoliating"**, etc.
+    """
+    try:
+        data = request.json
+        try:
+            ingredient_details = get_formatted_ingredients(data)
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
+
+        llm_input = (
+            f"Skincare Ingredients:\n{ingredient_details}\n\n"
+            "Generate a **list** (max 5 words) of key skincare benefits. Return only a JSON list."
+        )
+
+        # Generate a hash key based on ingredient details
+        ingredients_key = hashlib.md5(
+            json.dumps(ingredient_details, sort_keys=True).encode()
+        ).hexdigest()
+
+        # Check cache first
+        if ingredients_key in ingredient_summary_cache:
+            print("Using cached summary")
+            return jsonify({"summary": ingredient_summary_cache[ingredients_key]})
+
+        llm_chain = get_ingredient_summary_chain()
+        response = llm_chain.invoke({"ingredients": llm_input})
+
+        try:
+            summary_list = json.loads(response["text"].strip())
+            if isinstance(summary_list, list):
+                summary_list = summary_list[:5]  # Ensure max 5 words
+                ingredient_summary_cache[ingredients_key] = (
+                    summary_list  # Store in cache
+                )
+                return jsonify({"summary": summary_list})
+            else:
+                return jsonify({"summary": []})  # Return empty if not a valid list
+        except json.JSONDecodeError:
+            return jsonify({"summary": []})  # Handle JSON parsing errors
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 500
+
+
 def stream_recommend(llm_input: str, session_id: str):
     """
     Stream AI-generated recommendations based on product details and user profile.
@@ -139,8 +288,10 @@ def recommend_product():
             - `ingredients` (list of dicts): A list of ingredient objects, each containing:
                 - `name` (str): Ingredient name.
                 - `score` (int): Hazard score (1-10).
+                - `concerns` (str): Concerns for the ingredient.
             - `session_id` (str, optional): A unique identifier for maintaining conversation context.
               If omitted, a new session_id is generated.
+            - `user_profile` (dict): The user's profile.
 
     Returns:
         dict: A JSON object containing:
@@ -189,7 +340,6 @@ def recommend_product():
     """
     data = request.json
     product_name = data.get("product_name")
-    ingredients = data.get("ingredients")
     session_id = data.get("session_id")
     user_profile = data.get(
         "user_profile"
@@ -197,30 +347,13 @@ def recommend_product():
 
     if not product_name:
         return jsonify({"error": "Missing product_name"}), 400
-    if not ingredients:
-        return jsonify({"error": "Missing ingredients"}), 400
-    if not isinstance(ingredients, list):
-        return jsonify({"error": "Invalid ingredients (Should be a list)"}), 400
     if not user_profile:
         return jsonify({"error": "Missing user profile"}), 400
 
-    for i in ingredients:
-        if "name" not in i:
-            return jsonify({"error": "Ingredient missing 'name' field"}), 400
-        if "score" not in i:
-            return (
-                jsonify({"error": f"Ingredient '{i['name']}' missing 'score' field"}),
-                400,
-            )
-        if "concerns" not in i or not isinstance(i["concerns"], list):
-            return (
-                jsonify(
-                    {
-                        "error": f"Ingredient '{i['name']}' missing 'concerns' field or the 'concern' field is not a list"
-                    }
-                ),
-                400,
-            )
+    try:
+        ingredient_details = get_formatted_ingredients(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
     # If client didn't provide a session_id, generate one automatically
     if not session_id:
@@ -231,14 +364,6 @@ def recommend_product():
         f"- Skin Type: {user_profile.get('skinType', 'Unknown')}\n"
         f"- Skin Concerns: {user_profile.get('skinConcerns', 'None')}\n"
         f"- Allergies: {user_profile.get('allergies', 'None')}\n"
-    )
-
-    # Format the ingredients for the LLM with error handling
-    ingredient_details = "\n".join(
-        [
-            f"{i['name']} (Hazard Score: {i['score']})\n  - Concerns: {', '.join(i['concerns']) if i['concerns'] else 'None'}"
-            for i in ingredients
-        ]
     )
 
     # Explain hazard ratings to the LLM

@@ -1,0 +1,223 @@
+.profileCreationPage {
+  width: 80%;
+  max-width: 164vh;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 10px;
+  font-family: "Nunito", sans-serif;
+}
+
+.profileCreationPage h1 {
+  font-size: 2rem;
+  margin-bottom: 30px;
+  margin-top: 0;
+  text-align: center;
+  color: inherit;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  width: 100%;
+}
+
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.form-group label {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 12px;
+  border: 2px solid #ae7e7e;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: rgb(250, 250, 250);
+  font-family: "Nunito", sans-serif;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group input.error,
+.form-group select.error,
+.form-group textarea.error {
+  border-color: #ff4444;
+}
+
+.error-message {
+  color: #ff4444;
+  font-size: 0.85rem;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.form-group input:disabled,
+.form-group select:disabled,
+.form-group textarea:disabled {
+  background-color: #f5f5f5;
+  border-color: #ddd;
+  cursor: not-allowed;
+}
+
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  grid-column: 1 / -1;
+  justify-content: center;
+  width: 50%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.edit-btn,
+.save-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: "Nunito", sans-serif;
+  font-weight: 600;
+  flex: 1;
+}
+
+.edit-btn {
+  background: white;
+  color: #ae7e7e;
+}
+
+.edit-btn:hover {
+  background-color: rgba(174, 126, 126, 0.1);
+}
+
+.save-btn {
+  background: white;
+  color: #ae7e7e;
+}
+
+.save-btn:hover {
+  background: linear-gradient(90deg, #9e6e6e, #ffe5f0);
+}
+
+/* Dark mode styles */
+:global(.dark-mode) .profileCreationPage {
+  background: #2c2c2c;
+  color: var(--dark-text);
+}
+
+:global(.dark-mode) .form-group input,
+:global(.dark-mode) .form-group select,
+:global(.dark-mode) .form-group textarea {
+  background-color: #333;
+  border-color: #3d2a2a;
+  color: white;
+}
+
+:global(.dark-mode) .form-group input:disabled,
+:global(.dark-mode) .form-group select:disabled,
+:global(.dark-mode) .form-group textarea:disabled {
+  background-color: #2a2a2a;
+  border-color: #444;
+}
+
+:global(.dark-mode) .edit-btn {
+  border-color: #3d2a2a;
+  color: white;
+}
+
+:global(.dark-mode) .edit-btn:hover {
+  background-color: rgba(61, 42, 42, 0.2);
+}
+
+:global(.dark-mode) .save-btn {
+  background: linear-gradient(90deg, #2c2c2c, #3d2a2a);
+}
+
+:global(.dark-mode) .save-btn:hover {
+  background: linear-gradient(90deg, #3d3d3d, #4d3a3a);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .form-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .button-group {
+    width: 100%;
+  }
+}
+
+.time-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-selector select {
+  padding: 12px;
+  border: 2px solid #ae7e7e;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: rgb(250, 250, 250);
+  font-family: "Nunito", sans-serif;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.time-selector select:disabled {
+  background-color: #f5f5f5;
+  border-color: #ddd;
+  cursor: not-allowed;
+}
+
+.time-selector span {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #ae7e7e;
+}
+
+/* Dark mode styles for time selector */
+:global(.dark-mode) .time-selector select {
+  background-color: #333;
+  border-color: #3d2a2a;
+  color: white;
+}
+
+:global(.dark-mode) .time-selector select:disabled {
+  background-color: #2a2a2a;
+  border-color: #444;
+}
+
+:global(.dark-mode) .time-selector span {
+  color: #ffeff6;
+}

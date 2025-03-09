@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { auth, db } from "../firebase-config";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { resetNotifications } from "../components/Notification";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { resetNotifications } from "../components/Notification";
 import {
   initDailyCheckIn,
   markRoutineCompleted,
@@ -18,13 +20,24 @@ const Profile = () => {
     pmCompleted: false,
   });
 
+  // Generate time options
+  const hours = Array.from({ length: 12 }, (_, i) =>
+    (i + 1).toString().padStart(2, "0"),
+  );
+  const minutes = Array.from({ length: 60 }, (_, i) =>
+    i.toString().padStart(2, "0"),
+  );
+
   const [formData, setFormData] = useState({
     fullName: "",
     gender: "",
     skinType: "",
     skinConcerns: "",
     allergies: "",
-    skincareRoutine: { am: "", pm: "" },
+    skincareRoutine: {
+      am: { hour: "6", minute: "00", period: "AM" },
+      pm: { hour: "6", minute: "00", period: "PM" },
+    },
   });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -38,6 +51,19 @@ const Profile = () => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         setUserData(data);
+
+        // Parse existing time strings into hour, minute, period format
+        const parseTime = (timeStr) => {
+          if (!timeStr) return { hour: "06", minute: "00", period: "AM" };
+          const [time] = timeStr.split(" ");
+          const [hour, minute] = time.split(":");
+          return {
+            hour: hour.padStart(2, "0"),
+            minute: minute.padStart(2, "0"),
+            period: timeStr.includes("PM") ? "PM" : "AM",
+          };
+        };
+
         setFormData({
           fullName: data.fullName || user?.displayName || "",
           gender: data.gender || "",
@@ -45,8 +71,8 @@ const Profile = () => {
           skinConcerns: data.skinConcerns || "",
           allergies: data.allergies || "",
           skincareRoutine: {
-            am: data.skincareRoutine?.am || "",
-            pm: data.skincareRoutine?.pm || "",
+            am: parseTime(data.skincareRoutine?.am),
+            pm: parseTime(data.skincareRoutine?.pm),
           },
         });
 
@@ -66,7 +92,10 @@ const Profile = () => {
           skinType: "",
           skinConcerns: "",
           allergies: "",
-          skincareRoutine: { am: "", pm: "" },
+          skincareRoutine: {
+            am: { hour: "06", minute: "00", period: "AM" },
+            pm: { hour: "06", minute: "00", period: "PM" },
+          },
         });
 
         // Initialize a fresh check-in record
@@ -102,11 +131,18 @@ const Profile = () => {
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.startsWith("skincareRoutine")) {
-      const routineType = name.split(".")[1]; // Extract "am" or "pm"
+    if (name.startsWith("am") || name.startsWith("pm")) {
+      const [routine, timeComponent] = name.split("_");
       setFormData((prev) => ({
         ...prev,
-        skincareRoutine: { ...prev.skincareRoutine, [routineType]: value },
+        skincareRoutine: {
+          ...prev.skincareRoutine,
+          [routine]: {
+            ...prev.skincareRoutine[routine],
+            [timeComponent]: value,
+            period: routine.toUpperCase(), // Ensure period stays fixed
+          },
+        },
       }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -131,23 +167,20 @@ const Profile = () => {
 
       const userRef = doc(db, "users", user.uid);
 
-      await updateDoc(userRef, {
-        fullName: formData.fullName,
-        gender: formData.gender,
-        skinType: formData.skinType,
-        skinConcerns: formData.skinConcerns,
-        allergies: formData.allergies,
-        skincareRoutine: formData.skincareRoutine,
-      });
+      // Format times before saving
+      const formattedData = {
+        ...formData,
+        skincareRoutine: {
+          am: `${formData.skincareRoutine.am.hour}:${formData.skincareRoutine.am.minute} ${formData.skincareRoutine.am.period}`,
+          pm: `${formData.skincareRoutine.pm.hour}:${formData.skincareRoutine.pm.minute} ${formData.skincareRoutine.pm.period}`,
+        },
+      };
+
+      await updateDoc(userRef, formattedData);
 
       setUserData({
         ...userData,
-        fullName: formData.fullName,
-        gender: formData.gender,
-        skinType: formData.skinType,
-        skinConcerns: formData.skinConcerns,
-        allergies: formData.allergies,
-        skincareRoutine: formData.skincareRoutine,
+        ...formattedData,
       });
 
       setIsSaving(false);
@@ -158,6 +191,37 @@ const Profile = () => {
       alert("Error saving profile. Please try again.");
     }
   };
+
+  const TimeSelector = ({ prefix, value, onChange, disabled }) => (
+    <div className="time-selector">
+      <select
+        name={`${prefix}_hour`}
+        value={value.hour}
+        onChange={onChange}
+        disabled={disabled}
+      >
+        {hours.map((hour) => (
+          <option key={hour} value={hour}>
+            {hour}
+          </option>
+        ))}
+      </select>
+      <span>:</span>
+      <select
+        name={`${prefix}_minute`}
+        value={value.minute}
+        onChange={onChange}
+        disabled={disabled}
+      >
+        {minutes.map((minute) => (
+          <option key={minute} value={minute}>
+            {minute}
+          </option>
+        ))}
+      </select>
+      <span>{prefix.toUpperCase()}</span>
+    </div>
+  );
 
   // Handle routine check-in
   const handleRoutineCheckIn = async (routineType) => {
@@ -293,11 +357,11 @@ const Profile = () => {
               </td>
               <td>
                 {editing ? (
-                  <input
-                    type="text"
-                    name="skincareRoutine.am"
+                  <TimeSelector
+                    prefix="am"
                     value={formData.skincareRoutine.am}
                     onChange={handleChange}
+                    disabled={!editing}
                   />
                 ) : (
                   userData?.skincareRoutine?.am || "Not specified"
@@ -310,11 +374,11 @@ const Profile = () => {
               </td>
               <td>
                 {editing ? (
-                  <input
-                    type="text"
-                    name="skincareRoutine.pm"
+                  <TimeSelector
+                    prefix="pm"
                     value={formData.skincareRoutine.pm}
                     onChange={handleChange}
+                    disabled={!editing}
                   />
                 ) : (
                   userData?.skincareRoutine?.pm || "Not specified"

@@ -5,6 +5,8 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import Results from "./pages/Results"; // Import Results page
+import Registration from "./pages/Registration";
+import ProfileCreation from "./pages/ProfileCreation";
 import { ThemeProvider } from "./context/ThemeContext";
 import { useTheme } from "./context/ThemeContext";
 import { signOut } from "firebase/auth";
@@ -21,6 +23,7 @@ function AppContent() {
   const { isDarkMode } = useTheme();
   const [isAuth, setIsAuth] = useState(false);
   const [user] = useAuthState(auth);
+  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -34,6 +37,12 @@ function AppContent() {
           const userData = {
             fullName: user.displayName || "",
             email: user.email || "",
+            displayName: user.displayName || user.email.split("@")[0],
+            photoURL:
+              user.photoURL ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                user.displayName || user.email.split("@")[0],
+              )}&background=ae7e7e&color=fff`,
             createdAt: new Date(),
             skincareRoutine: { am: "", pm: "" },
           };
@@ -41,6 +50,7 @@ function AppContent() {
           await setDoc(userRef, userData);
         }
 
+        setUserData(docSnap.data());
         // Initialize today's check-in status
         initDailyCheckIn();
 
@@ -63,6 +73,7 @@ function AppContent() {
       if (autoMode) localStorage.setItem("autoMode", autoMode);
 
       setIsAuth(false);
+      setUserData(null);
       window.location.pathname = "/login";
     });
   };
@@ -78,16 +89,29 @@ function AppContent() {
             <div className="right-nav">
               <span className="user">
                 {!user ? (
-                  <Link to="/login"> login </Link>
+                  <div className="auth-links">
+                    <Link to="/login"> login </Link>
+                    <Link to="/registration"> register </Link>
+                  </div>
                 ) : (
                   <div className="user-menu">
                     <div className="user-top">
-                      <div>{user?.displayName}</div>
+                      <div>{user.displayName || user.email.split("@")[0]}</div>
                       <img
-                        src={user?.photoURL || ""}
+                        src={
+                          user.photoURL ||
+                          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            user.displayName || user.email.split("@")[0],
+                          )}&background=ae7e7e&color=fff`
+                        }
                         height="30px"
                         width="30px"
                         alt=""
+                        onError={(e) => {
+                          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            user.displayName || user.email.split("@")[0],
+                          )}&background=ae7e7e&color=fff`;
+                        }}
                       />
                       <Link to="/profile"> profile </Link>
                       <Link onClick={signUserOut}> log out </Link>
@@ -106,6 +130,8 @@ function AppContent() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/results" element={<Results />} />{" "}
           {/* ✅ Keep this new route */}
+          <Route path="/registration" element={<Registration />} />
+          <Route path="/profile-creation" element={<ProfileCreation />} />
         </Routes>
       </Router>
     </div>

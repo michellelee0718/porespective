@@ -31,6 +31,7 @@ Porespective is a web application built with
 1. Create and activate a virtual environment: `python -m venv venv`; Mac/Linux: `source venv/bin/activate`; Windows: `venv\Scripts\activate`; conda: `conda create --name {environment_name} python=3.10` and `conda activate {environment_name}`
 2. `cd backend`
 3. Install backend dependencies: `pip install -r requirements.txt`
+4. `node email.mjs`
 
 ### Launch the LLM
 

@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import nodemailer from "nodemailer";
 
-dotenv.config({ path: "../.env" });
+dotenv.config({ path: "./.env" });
 
 const app = express();
 const PORT = 3001;

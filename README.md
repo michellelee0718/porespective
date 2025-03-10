@@ -12,19 +12,18 @@ Find your next favorite skincare product with **Porespective**.
 
 ## 💫 What is it?
 
-Porespective is a web application built with
-[Firebase](https://firebase.google.com/) and [React](https://reactjs.org/) that ...
+Porespective is an AI-driven web application that provides information on skincare products and recommendations built with an architecture using Firebase, React, and Python. This system integrates LLM-based summaries of ingredients and customized recommendations, real-time notifications, and a scalable architecture to support many users who want personalized skincare recommendations.
 
 ## 🧳 How to Locally Host App
 
 1. Open the terminal
-2. Clone the Git repository with `$ git clone https://github.com/michellelee0718/porespective`
+2. Clone the Git repository with `git clone https://github.com/michellelee0718/porespective`
 
 ## Frontend
 
 1. `cd frontend`
-2. run `$ npm install` to install all necessary dependencies
-3. Then run `$ npm start` to launch the app
+2. run `npm install` to install all necessary dependencies
+3. Then run `npm start` to launch the app
 
 ## Backend
 
@@ -86,26 +85,37 @@ To run all the backend tests:
 
 ```
 .
+├── .github
+│   └── workflows
+│       ├── format.yaml
+│       └── test.yaml
+├── .gitignore
+├── .pre-commit-config.yaml
 ├── README.md
 ├── backend
+│   ├── .env
 │   ├── __init__.py
+│   ├── cache.py
 │   ├── callback.py
 │   ├── config
 │   │   ├── __init__.py
 │   │   └── settings.py
+│   ├── email.mjs
 │   ├── model.py
 │   ├── prompt.py
 │   ├── requirements.txt
 │   ├── scraper.py
 │   ├── server.py
-│   ├── test.py
-│   ├── email.mjs
 │   ├── tests
 │   │   ├── __init__.py
 │   │   └── unit_tests
 │   │       ├── __init__.py
+│   │       ├── test_chat.py
+│   │       ├── test_ingredient_summary.py
 │   │       ├── test_model.py
-│   │       ├── test_server.py
+│   │       ├── test_recommend_product.py
+│   │       ├── test_scraper_cache.py
+│   │       ├── test_streaming.py
 │   │       └── test_utils.py
 │   └── utils.py
 ├── frontend
@@ -133,21 +143,27 @@ To run all the backend tests:
 │       ├── index.js
 │       ├── pages
 │       │   ├── Home.js
+│       │   ├── Login.css
 │       │   ├── Login.js
+│       │   ├── Profile.css
 │       │   ├── Profile.js
+│       │   ├── ProfileCreation.css
+│       │   ├── ProfileCreation.js
+│       │   ├── Registration.css
+│       │   ├── Registration.js
 │       │   ├── Results.css
 │       │   └── Results.js
 │       ├── reportWebVitals.js
 │       ├── setupTests.js
 │       └── tests
 │           ├── components
+│           │   ├── Notification.test.js
 │           │   ├── RoutineCheckIn.test.js
 │           │   └── ThemeToggle.test.js
-│           │   └── Notification.test.js
 │           ├── firebase
 │           │   └── RoutineService.test.js
 │           └── pages
-│               └── Profile.test.js
+│               ├── Login.test.js
+│               ├── Profile.test.js
+│               └── Results.test.js
 ```
-
-**Porespective** was created by

@@ -28,14 +28,33 @@ def test_scrape_product_ingredients_cached(mock_cache):
     mock_get_cached_product.return_value = {
         "product_url": "https://example.com",
         "product_name": "CeraVe Moisturizing Cream",
-        "ingredients": [{"name": "Water", "score": "1"}],
+        "ingredients": [
+            {"name": "Water", "score": "1", "concerns": []},
+            {
+                "name": "Fragrance",
+                "score": "8",
+                "concerns": [
+                    "Allergies/immunotoxicity (high)",
+                    "Endocrine disruption (moderate)",
+                ],
+            },
+        ],
     }
 
     result = scrape_product_ingredients("CeraVe Moisturizing Cream")
 
     assert result["product_name"] == "CeraVe Moisturizing Cream"
-    assert len(result["ingredients"]) == 1
+    assert len(result["ingredients"]) == 2
+
     assert result["ingredients"][0]["name"] == "Water"
+    assert result["ingredients"][0]["score"] == "1"
+    assert result["ingredients"][0]["concerns"] == []
+    assert result["ingredients"][1]["name"] == "Fragrance"
+    assert result["ingredients"][1]["score"] == "8"
+    assert result["ingredients"][1]["concerns"] == [
+        "Allergies/immunotoxicity (high)",
+        "Endocrine disruption (moderate)",
+    ]
 
     mock_cache_product_data.assert_not_called()  # Should NOT cache
     mock_get_cached_product.assert_called_once()  # Should check cache first
@@ -51,24 +70,54 @@ def test_scrape_product_ingredients_live_scrape(mock_browser, mock_cache):
         "https://example.com"
     )
 
-    # Mock product name extraction to return a real string
+    # Mock product name extraction
     mock_browser.find_element.return_value.text.strip.return_value = "Unknown Product"
 
     # Mock ingredient elements
     def mock_find_elements(by, selector):
         if "td-ingredient-interior" in selector:
-            return [MagicMock(text="Water")]
+            return [MagicMock(text="Water"), MagicMock(text="Fragrance")]
         elif "td-score img.ingredient-score" in selector:
-            return [MagicMock(get_attribute=lambda attr: "Ingredient score: 1")]
+            return [
+                MagicMock(get_attribute=lambda attr: "Ingredient score: 1"),
+                MagicMock(get_attribute=lambda attr: "Ingredient score: 8"),
+            ]
+        elif "tr.ingredient-more-info-wrapper" in selector:
+            concern_tbody = MagicMock()
+
+            concern_row = MagicMock()
+            concern_title_td = MagicMock()
+            concern_title_td.get_attribute.return_value = (
+                "CONCERNS"  # First TD contains "CONCERNS"
+            )
+
+            concern_data_td = MagicMock()
+            concern_data_td.get_attribute.return_value = "<ul><li>Allergies/immunotoxicity (high)</li><li>Endocrine disruption (moderate)</li></ul>"
+
+            concern_row.find_elements.return_value = [concern_title_td, concern_data_td]
+
+            concern_tbody.find_elements.return_value = [concern_row]
+
+            return [[], concern_tbody]  # water: []
         return []
 
     mock_browser.find_elements.side_effect = mock_find_elements
 
     result = scrape_product_ingredients("CeraVe Moisturizing Cream")
 
+    # Assertions
     assert result["product_name"] == "Unknown Product"  # Mocked scenario
-    assert len(result["ingredients"]) == 1
+    assert len(result["ingredients"]) == 2
+
     assert result["ingredients"][0]["name"] == "Water"
     assert result["ingredients"][0]["score"] == "1"
+    assert result["ingredients"][0]["concerns"] == []
+
+    assert result["ingredients"][1]["name"] == "Fragrance"
+    assert result["ingredients"][1]["score"] == "8"
+    assert result["ingredients"][1]["concerns"] == [
+        "Allergies/immunotoxicity (high)",
+        "Endocrine disruption (moderate)",
+    ]
 
     mock_cache_product_data.assert_called_once()  # Should save new cache

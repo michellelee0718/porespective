@@ -17,19 +17,19 @@ def save_cache(cache):
         json.dump(cache, f, indent=2)
 
 
-def get_cached_product(product_name, max_age_days=30):
+def get_cached_product(product_name, max_age_days=7):
     """
-    Retrieve product data from the local cache if available and not expired (default 30 days).
+    Retrieve product data from the local cache if available and not expired (default 7 days).
 
     Args:
         product_name (str): The name of the skincare product to retrieve from the cache.
-        max_age_days (int, optional): The maximum age (in days) for cached data to be considered valid. Default is 30 days.
+        max_age_days (int, optional): The maximum age (in days) for cached data to be considered valid. Default is 7 days.
 
     Returns:
         JSON: A cached product entry containing:
             - "product_url" (str): The URL of the product.
             - "product_name" (str): The product's official name.
-            - "ingredients" (list): A list of ingredients and their hazard scores.
+            - "ingredients" (list): A list of ingredients and their hazard scores along with concerns.
 
         If the cache is expired or the product is not found, returns `None`.
 
@@ -50,8 +50,8 @@ def get_cached_product(product_name, max_age_days=30):
         "product_url": "https://www.ewg.org/skindeep/products/123456-CeraVe_Moisturizing_Cream/",
         "product_name": "CeraVe Moisturizing Cream",
         "ingredients": [
-            { "name": "Water", "score": "1" },
-            { "name": "Fragrance", "score": "8" }
+            { "name": "Water", "score": "1", "concerns": []},
+            { "name": "Fragrance", "score": "8", "concerns": ["Allergies/immunotoxicity (high)", "Endocrine disruption (moderate)"] }
         ],
         "last_updated": "2025-03-01T12:00:00"
     }
@@ -79,7 +79,7 @@ def cache_product_data(product_name, data):
         data (dict): A dictionary containing:
             - "product_url" (str): The product's URL.
             - "product_name" (str): The official product name.
-            - "ingredients" (list): A list of ingredients and their safety scores.
+            - "ingredients" (list): A list of ingredients and their safety scores along with concerns.
 
     Returns:
         None
@@ -95,8 +95,8 @@ def cache_product_data(product_name, data):
         "product_url": "https://www.ewg.org/skindeep/products/123456-CeraVe_Moisturizing_Cream/",
         "product_name": "CeraVe Moisturizing Cream",
         "ingredients": [
-            { "name": "Water", "score": "1" },
-            { "name": "Fragrance", "score": "8" }
+            { "name": "Water", "score": "1", "concerns": []},
+            { "name": "Fragrance", "score": "8", "concerns": ["Allergies/immunotoxicity (high)", "Endocrine disruption (moderate)"] }
         ]
     })
     ```
@@ -108,8 +108,8 @@ def cache_product_data(product_name, data):
             "product_url": "https://www.ewg.org/skindeep/products/123456-CeraVe_Moisturizing_Cream/",
             "product_name": "CeraVe Moisturizing Cream",
             "ingredients": [
-                { "name": "Water", "score": "1" },
-                { "name": "Fragrance", "score": "8" }
+                { "name": "Water", "score": "1", "concerns": []},
+                { "name": "Fragrance", "score": "8", "concerns": ["Allergies/immunotoxicity (high)", "Endocrine disruption (moderate)"] }
             ],
             "last_updated": "2025-03-01T12:00:00"
         }

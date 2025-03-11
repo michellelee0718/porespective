@@ -17,7 +17,7 @@ def scrape_product_ingredients(product_name):
         product_name (str): The searching keyword.
 
     Returns:
-        JSON: A JSON response containing the product's URL, name, and a list of ingredients with their hazard scores.
+        JSON: A JSON response containing the product's URL, name, and a list of ingredients with their hazard scores and concerns.
               If the product is not found, an error message is returned.
 
     Description:
@@ -32,8 +32,8 @@ def scrape_product_ingredients(product_name):
         "product_url": "https://www.ewg.org/skindeep/products/123456-CeraVe_Moisturizing_Cream/",
         "product_name": "CeraVe Moisturizing Cream",
         "ingredients": [
-            { "name": "Water", "score": "1" },
-            { "name": "Fragrance", "score": "8" }
+            { "name": "Water", "score": "1", "concerns": []},
+            { "name": "Fragrance", "score": "8", "concerns": ["Allergies/immunotoxicity (high)", "Endocrine disruption (moderate)"] }
         ]
     }
     ```
@@ -49,8 +49,8 @@ def scrape_product_ingredients(product_name):
         "product_url": "https://www.ewg.org/skindeep/products/123456-CeraVe_Moisturizing_Cream/",
         "product_name": "CeraVe Moisturizing Cream",
         "ingredients": [
-            { "name": "Water", "score": "1" },
-            { "name": "Fragrance", "score": "8" }
+            { "name": "Water", "score": "1", "concerns": []},
+            { "name": "Fragrance", "score": "8", "concerns": ["Allergies/immunotoxicity (high)", "Endocrine disruption (moderate)"] }
         ]
     }
     ```

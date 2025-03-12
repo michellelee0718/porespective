@@ -136,7 +136,10 @@ def get_formatted_ingredients(data: dict):
             )
 
     ingredient_details = "\n".join(
-        [f"{i['name']} (Hazard Score: {i['score']})" for i in ingredients]
+        [
+            f"{i['name']} (Hazard Score: {i['score']})\n  - Concerns: {', '.join(i['concerns']) if i['concerns'] else 'None'}"
+            for i in ingredients
+        ]
     )
 
     return ingredient_details

@@ -16,7 +16,10 @@ def test_get_formatted_ingredients_success():
             {"name": "Fragrance", "score": 8, "concerns": ["Allergen"]},
         ]
     }
-    expected_output = "Water (Hazard Score: 1)\nFragrance (Hazard Score: 8)"
+    expected_output = (
+        "Water (Hazard Score: 1)\n  - Concerns: None\n"
+        "Fragrance (Hazard Score: 8)\n  - Concerns: Allergen"
+    )
     assert get_formatted_ingredients(test_data) == expected_output
 
 
@@ -87,7 +90,10 @@ def test_get_formatted_ingredients_success():
             {"name": "Fragrance", "score": 8, "concerns": ["Allergen"]},
         ]
     }
-    expected_output = "Water (Hazard Score: 1)\nFragrance (Hazard Score: 8)"
+    expected_output = (
+        "Water (Hazard Score: 1)\n  - Concerns: None\n"
+        "Fragrance (Hazard Score: 8)\n  - Concerns: Allergen"
+    )
     assert get_formatted_ingredients(test_data) == expected_output
 
 

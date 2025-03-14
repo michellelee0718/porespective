@@ -99,11 +99,11 @@ def get_formatted_ingredients(data: dict):
                 - concerns(str): The concerns of the ingredient.
 
     Returns:
-        str: A formatted string where each ingredient is displayed with its name and hazard score.
+        str: A formatted string where each ingredient is displayed with its name, hazard score, and concerns.
 
         Example:
         ```
-        "Hyaluronic Acid (Hazard Score: 1)\nFragrance (Hazard Score: 8)\nSalicylic Acid (Hazard Score: 4)"
+        "Hyaluronic Acid (Hazard Score: 1)\n - Concerns: None\nFragrance (Hazard Score: 8)\n - Concerns: Allergen\nSalicylic Acid (Hazard Score: 4)\n - Concerns: Allergen"
         ```
 
         OR
@@ -136,7 +136,10 @@ def get_formatted_ingredients(data: dict):
             )
 
     ingredient_details = "\n".join(
-        [f"{i['name']} (Hazard Score: {i['score']})" for i in ingredients]
+        [
+            f"{i['name']} (Hazard Score: {i['score']})\n  - Concerns: {', '.join(i['concerns']) if i['concerns'] else 'None'}"
+            for i in ingredients
+        ]
     )
 
     return ingredient_details
